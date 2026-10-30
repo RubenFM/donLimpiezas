@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Limpio</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true"></span>
+        <h1>Limpio</h1>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" role="tab" data-tab="clean">Limpieza</button>
+        <button class="tab" role="tab" data-tab="apps">Apps preinstaladas</button>
+      </nav>
+    </header>
+
+    <div id="admin-banner" class="banner" hidden>
+      <span>Sin permisos de administrador: algunas categorías y opciones están desactivadas.</span>
+      <button id="btn-elevate" class="btn small">Reiniciar como administrador</button>
+    </div>
+
+    <main>
+      <section id="tab-clean" class="panel active">
+        <div class="toolbar">
+          <button id="btn-scan" class="btn">Analizar</button>
+          <button id="btn-clean" class="btn primary" disabled>Limpiar seleccionados</button>
+          <span id="clean-summary" class="summary"></span>
+        </div>
+        <div id="clean-list" class="list">
+          <p class="empty">Pulsa <strong>Analizar</strong> para ver cuánto espacio puedes liberar.</p>
+        </div>
+        <div id="clean-status" class="status" hidden></div>
+      </section>
+
+      <section id="tab-apps" class="panel">
+        <div class="toolbar">
+          <button id="btn-apps" class="btn">Buscar apps</button>
+          <button id="btn-remove" class="btn danger" disabled>Quitar seleccionadas</button>
+          <label class="option"><input type="checkbox" id="opt-restore" /> Crear punto de restauración</label>
+          <label class="option"><input type="checkbox" id="opt-allusers" /> Para todos los usuarios</label>
+        </div>
+        <div id="apps-list" class="list">
+          <p class="empty">Pulsa <strong>Buscar apps</strong> para detectar el bloatware instalado.</p>
+        </div>
+        <div id="apps-status" class="status" hidden></div>
+      </section>
+    </main>
+
+    <dialog id="confirm">
+      <form method="dialog">
+        <h2 id="confirm-title"></h2>
+        <p id="confirm-body"></p>
+        <div class="dialog-actions">
+          <button value="cancel" class="btn">Cancelar</button>
+          <button value="ok" class="btn primary">Continuar</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

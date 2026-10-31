@@ -16,7 +16,7 @@
 
 ## 4. Integración y documentación
 
-- [ ] 4.1 Actualizar un programa real desde la app y comprobar que desaparece de la lista
+- [x] 4.1 Actualizar un programa real desde la app y comprobar que desaparece de la lista
 - [x] 4.2 Actualizar `README.md`; verificar que coincide con el código
 
 ## Workflow follow-up

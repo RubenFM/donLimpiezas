@@ -10,7 +10,7 @@
 
 ## 3. Integración y documentación
 
-- [ ] 3.1 Abrir la app real y comprobar que cada tarjeta coincide con su módulo y que "Revisar" abre el módulo correcto
+- [x] 3.1 Abrir la app real y comprobar que cada tarjeta coincide con su módulo y que "Revisar" abre el módulo correcto
 - [x] 3.2 Actualizar `README.md`; verificar que coincide con el código
 
 ## Workflow follow-up

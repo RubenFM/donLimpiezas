@@ -13,7 +13,7 @@
 
 ## 3. Integración y documentación
 
-- [ ] 3.1 Restaurar desde el historial un ajuste aplicado en la app real y comprobarlo en Performance Optimizer
+- [x] 3.1 Restaurar desde el historial un ajuste aplicado en la app real y comprobarlo en Performance Optimizer
 - [x] 3.2 Actualizar `README.md`; verificar que coincide con el código
 
 ## Workflow follow-up

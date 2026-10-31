@@ -17,7 +17,7 @@
 
 ## 4. Integración y documentación
 
-- [ ] 4.1 Desinstalar un programa real de prueba desde la app y comprobar que desaparece de la lista y de Configuración
+- [x] 4.1 Desinstalar un programa real de prueba desde la app y comprobar que desaparece de la lista y de Configuración
 - [x] 4.2 Actualizar `README.md` (funciones y estructura); verificar que coincide con el código
 
 ## Workflow follow-up

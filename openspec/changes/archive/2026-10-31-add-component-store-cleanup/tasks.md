@@ -10,7 +10,7 @@
 
 ## 3. Integración y documentación
 
-- [ ] 3.1 Ejecutar la limpieza como administrador en la app real y comprobar el espacio liberado
+- [x] 3.1 Ejecutar la limpieza como administrador en la app real y comprobar el espacio liberado
 - [x] 3.2 Actualizar la tabla de `specs/system-cleanup` y `README.md`; verificar que coinciden con `categories()`
 
 ## Workflow follow-up

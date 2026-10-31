@@ -13,7 +13,7 @@
 
 ## 3. Integración y documentación
 
-- [ ] 3.1 Liberar un archivo real de OneDrive y comprobar en el Explorador que pasa a "solo en la nube" y se descarga al abrirlo
+- [x] 3.1 Liberar un archivo real de OneDrive y comprobar en el Explorador que pasa a "solo en la nube" y se descarga al abrirlo
 - [x] 3.2 Actualizar `README.md`; verificar que coincide con el código
 
 ## Workflow follow-up

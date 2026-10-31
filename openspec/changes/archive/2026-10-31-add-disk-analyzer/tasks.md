@@ -12,7 +12,7 @@
 
 ## 3. Integración y documentación
 
-- [ ] 3.1 Analizar C: en la app real y navegar hasta la carpeta del usuario
+- [x] 3.1 Analizar C: en la app real y navegar hasta la carpeta del usuario
 - [x] 3.2 Actualizar `README.md`; verificar que coincide con el código
 
 ## Workflow follow-up

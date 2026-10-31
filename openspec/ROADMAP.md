@@ -1,27 +1,30 @@
 # Hoja de ruta
 
-| # | Módulo | Cambio | Estado |
-|---|--------|--------|--------|
-| 1 | Navegación lateral | `add-sidebar-navigation` | Hecho: `specs/app-navigation` |
-| 2 | Startup Manager | `add-startup-manager` | Hecho: `specs/startup-programs` |
-| 3 | Custom Clean | `extend-custom-clean` | Implementado, pendiente de probar en la app y archivar |
-| — | Apps preinstaladas | — | Implementado: `specs/bloatware-removal` |
-| 4 | Uninstaller | `add-uninstaller` | Implementado, pendiente de probar en la app y archivar |
-| 5 | Performance Optimizer | `add-performance-optimizer` | Implementado, pendiente de probar en la app y archivar |
-| 6 | Duplicate Finder | `add-duplicate-finder` | Implementado, pendiente de probar en la app y archivar |
-| 7 | Software Updater | `add-software-updater` | Implementado, pendiente de probar en la app y archivar |
-| 8 | Health Check | `add-health-check` | Implementado, pendiente de probar en la app y archivar |
-| 9 | Cloud Drive Cleaner | `add-cloud-drive-cleaner` | Implementado, pendiente de probar en la app y archivar |
-| 10 | Driver Updater | `add-driver-updater` | Implementado, pendiente de probar en la app y archivar |
-| 11 | History | `add-activity-history` | Implementado, pendiente de probar en la app y archivar |
-| 12 | Disk Analyzer | `add-disk-analyzer` | Implementado, pendiente de probar en la app y archivar |
-| 13 | Startup Manager: tareas y servicios | `extend-startup-manager` | Implementado, pendiente de probar en la app y archivar |
-| 14 | Custom Clean: componentes de Windows | `add-component-store-cleanup` | Implementado, pendiente de probar en la app y archivar |
+## Hecho
 
-Flujo por cambio: revisar el borrador → `/opsx:propose` para completar specs, design y tasks → `/opsx:apply` → `/opsx:archive`.
+| Módulo | Especificación | Cambios archivados |
+|--------|----------------|--------------------|
+| Navegación lateral | `app-navigation` | `add-sidebar-navigation`, `add-software-updater`, `add-health-check` |
+| Health Check | `health-check` | `add-health-check` |
+| Custom Clean | `system-cleanup` | base, `extend-custom-clean`, `add-component-store-cleanup` |
+| Uninstaller | `program-uninstall` | `add-uninstaller` |
+| Bloatware Remover | `bloatware-removal` | base |
+| Disk Analyzer | `disk-analysis` | `add-disk-analyzer` |
+| Duplicate Finder | `duplicate-files` | `add-duplicate-finder` |
+| Cloud Drive Cleaner | `cloud-storage-cleanup` | `add-cloud-drive-cleaner` |
+| Performance Optimizer | `system-tweaks` | `add-performance-optimizer` |
+| Startup Manager | `startup-programs` | `add-startup-manager`, `extend-startup-manager` |
+| Software Updater | `software-updates` | `add-software-updater` |
+| Driver Updater | `driver-updates` | `add-driver-updater` |
+| History | `activity-history` | `add-activity-history` |
+| Permisos | `privileges` | base |
+
+Los cambios están en `openspec/changes/archive/`.
 
 ## Ideas pendientes
 
 - Limpieza programada (Programador de tareas): necesita un ejecutable instalado; se retoma cuando haya despliegue.
 - Ajustes de la app: exclusiones en Custom Clean, umbrales de Health Check, idioma.
 - Versión en inglés de los textos.
+
+Flujo por cambio: `/opsx:propose` → `/opsx:apply` → probar en la app → `/opsx:archive`.

@@ -13,7 +13,7 @@
 
 ## 3. Integración y documentación
 
-- [ ] 3.1 Buscar actualizaciones en la app real y abrir la página de NVIDIA desde el botón
+- [x] 3.1 Buscar actualizaciones en la app real y abrir la página de NVIDIA desde el botón
 - [x] 3.2 Actualizar `README.md`; verificar que coincide con el código
 
 ## Workflow follow-up

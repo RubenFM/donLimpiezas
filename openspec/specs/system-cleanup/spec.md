@@ -50,6 +50,10 @@ El sistema SHALL ofrecer las categorías de la tabla anterior, cada una con iden
 - **WHEN** la carpeta de datos de un navegador no existe
 - **THEN** su categoría se muestra con 0 bytes y 0 elementos
 
+#### Scenario: Aplicación no instalada
+- **WHEN** Spotify no está instalado
+- **THEN** la categoría `spotify_cache` se muestra con 0 bytes y 0 elementos
+
 ### Requirement: Análisis sin modificar nada
 
 El sistema SHALL calcular, para cada categoría, el tamaño total en bytes y el número de elementos que se borrarían, sin modificar ningún archivo.
@@ -112,3 +116,40 @@ El sistema SHALL mostrar las categorías que requieren administrador con una eti
 #### Scenario: Sin permisos
 - **WHEN** la app se ejecuta sin administrador
 - **THEN** `windows_temp`, `system_crash_dumps` y `windows_update` aparecen deshabilitadas
+
+### Requirement: Categorías de privacidad
+
+El sistema SHALL ofrecer en el grupo "Privacidad" el borrado de historial y cookies de los navegadores basados en Chromium (todos los perfiles), de las cookies de Firefox y de los documentos recientes. Estas categorías MUST aparecer desmarcadas por defecto y SHALL mostrar un aviso de sus consecuencias. MUST NOT borrar contraseñas, marcadores ni el historial de Firefox.
+
+#### Scenario: Análisis con privacidad
+- **WHEN** el usuario analiza y hay cookies de Chrome
+- **THEN** "Historial y cookies de Chrome" aparece con su tamaño, desmarcada y con el aviso "Cerrará tu sesión en las webs"
+
+#### Scenario: Marcadores intactos
+- **WHEN** se limpia "Historial y cookies de Chrome"
+- **THEN** los marcadores y las contraseñas guardadas de Chrome siguen disponibles
+
+### Requirement: Aviso de programa abierto
+
+Cuando un programa asociado a una categoría se está ejecutando durante el análisis, el sistema SHALL mostrar en esa categoría la etiqueta "Abierto" y un aviso indicando que conviene cerrarlo para limpiarla por completo. La categoría MUST seguir pudiéndose seleccionar.
+
+#### Scenario: Chrome abierto
+- **WHEN** el usuario analiza con Chrome abierto
+- **THEN** las categorías de Chrome muestran "Abierto" y el aviso
+- **AND** se pueden seleccionar y limpiar, omitiendo los archivos en uso
+
+### Requirement: Limpieza del almacén de componentes
+
+El sistema SHALL ofrecer la categoría "Componentes antiguos de Windows Update", que requiere administrador, aparece desmarcada por defecto con el aviso de que tarda varios minutos y ejecuta la limpieza oficial de componentes de Windows sin `/ResetBase`. Su tamaño SHALL mostrarse como desconocido al analizar y, al limpiar, el espacio liberado SHALL calcularse como la diferencia del espacio libre del disco del sistema.
+
+#### Scenario: Analizar
+- **WHEN** el usuario analiza
+- **THEN** la categoría aparece con tamaño "—" y desmarcada
+
+#### Scenario: Limpiar
+- **WHEN** el usuario la selecciona y limpia como administrador
+- **THEN** se ejecuta la limpieza de componentes y se informa del espacio liberado en el disco del sistema
+
+#### Scenario: Fallo de DISM
+- **WHEN** DISM termina con error
+- **THEN** la categoría se cuenta como fallida y el resto de categorías se limpia con normalidad

@@ -17,7 +17,7 @@
 
 ## 4. Integración y documentación
 
-- [ ] 4.1 Analizar Descargas en la app real, enviar un duplicado a la papelera y restaurarlo desde ella
+- [x] 4.1 Analizar Descargas en la app real, enviar un duplicado a la papelera y restaurarlo desde ella
 - [x] 4.2 Actualizar `README.md`; verificar que coincide con el código
 
 ## Workflow follow-up

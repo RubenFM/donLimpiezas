@@ -12,7 +12,7 @@
 
 ## 3. Integración y documentación
 
-- [ ] 3.1 Desactivar y reactivar en la app real una tarea y un servicio y comprobarlo en el Programador de tareas y en Servicios
+- [x] 3.1 Desactivar y reactivar en la app real una tarea y un servicio y comprobarlo en el Programador de tareas y en Servicios
 - [x] 3.2 Actualizar `README.md`; verificar que coincide con el código
 
 ## Workflow follow-up

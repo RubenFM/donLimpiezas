@@ -117,7 +117,7 @@ function render(root: HTMLElement) {
       if (optRestore.checked) {
         showStatus(status, "Creando punto de restauración…");
         try {
-          messages.push(escapeHtml(await invoke<string>("create_restore_point")));
+          messages.push(escapeHtml(await invoke<string>("create_restore_point", { purpose: "apps" })));
         } catch (e) {
           const go = await confirmDialog(
             "No se pudo crear el punto de restauración",

@@ -44,6 +44,12 @@ Nunca se tocan Microsoft Store, los runtimes (VCLibs, .NET, UI.Xaml), el shell n
 - "Conservar el más antiguo" selecciona el resto de copias; nunca deja borrar todas las de un grupo
 - Envía los archivos a la papelera y lo registra en `%LOCALAPPDATA%\DonLimpiezas\duplicates.log`
 
+**Cloud Drive Cleaner**
+- Detecta OneDrive (todas las cuentas) y Dropbox y lista los archivos descargados en el equipo por
+  tamaño y antigüedad, sin abrirlos ni descargar nada
+- "Liberar espacio" los deja solo en la nube (`attrib -P +U`, como el Explorador): no se borran y se
+  descargan al abrirlos. Registro en `%LOCALAPPDATA%\DonLimpiezas\cloud.log`
+
 **Performance Optimizer**
 - Catálogo de ajustes de registro revisados: telemetría, anuncios y sugerencias, Widgets, Copilot,
   búsqueda web del menú Inicio y grabación de juegos en segundo plano
@@ -64,6 +70,12 @@ Nunca se tocan Microsoft Store, los runtimes (VCLibs, .NET, UI.Xaml), el shell n
 - Los actualiza de uno en uno con sus instaladores oficiales y lo registra en
   `%LOCALAPPDATA%\DonLimpiezas\updates.log`
 - Al abrir la app comprueba las actualizaciones y muestra cuántas hay en la barra lateral
+
+**Driver Updater**
+- Inventario de controladores con filtro
+- Busca e instala actualizaciones de controladores solo con Windows Update (instalar requiere
+  administrador), con punto de restauración previo. Registro en `%LOCALAPPDATA%\DonLimpiezas\drivers.log`
+- Para tarjetas NVIDIA, AMD o Intel, botón a la herramienta oficial del fabricante
 
 ## Requisitos (en Windows)
 
@@ -104,15 +116,19 @@ src/
     uninstaller.ts    Uninstaller
     bloatware-remover.ts  Bloatware Remover
     duplicate-finder.ts   Duplicate Finder
+    cloud-drive-cleaner.ts  Cloud Drive Cleaner
     performance-optimizer.ts  Performance Optimizer
     startup-manager.ts    Startup Manager
     software-updater.ts   Software Updater
+    driver-updater.ts     Driver Updater
 src-tauri/src/
   lib.rs              Comandos expuestos a la interfaz
   cleaner.rs          Categorías de limpieza, análisis y borrado
   debloat.rs          Catálogo de bloatware y desinstalación vía PowerShell
   duplicates.rs       Búsqueda de duplicados por contenido y papelera
   tweaks.rs           Catálogo de ajustes reversibles y valores originales
+  cloud.rs            Carpetas de OneDrive/Dropbox y liberar espacio local
+  drivers.rs          Inventario de controladores y Windows Update
   startup.rs          Programas de inicio y su estado en StartupApproved
   uninstaller.rs      Programas instalados y desinstalación con su desinstalador
   cmdline.rs          Interpretación de líneas de comandos registradas
@@ -120,7 +136,7 @@ src-tauri/src/
   sysinfo.rs          Windows, memoria, discos y tiempo encendido
   log.rs              Registro de cambios en %LOCALAPPDATA%\DonLimpiezas
   ps.rs               Ejecución de PowerShell sin ventana
-  system.rs           Administrador, elevación y procesos en ejecución
+  system.rs           Administrador, elevación, puntos de restauración y procesos
 ```
 
 Para añadir un módulo, crea `src/modules/<id>.ts` exportando un `Module` (id, nombre en inglés,

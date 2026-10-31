@@ -1,6 +1,8 @@
 mod cleaner;
+mod cloud;
 mod cmdline;
 mod debloat;
+mod drivers;
 mod duplicates;
 mod log;
 mod ps;
@@ -68,8 +70,14 @@ async fn list_bloat() -> Result<Vec<debloat::BloatApp>, String> {
 }
 
 #[tauri::command]
-async fn create_restore_point() -> Result<String, String> {
-    blocking(debloat::create_restore_point).await
+/// La descripción sale de una lista fija según para qué se crea.
+async fn create_restore_point(purpose: String) -> Result<String, String> {
+    let description = match purpose.as_str() {
+        "apps" => "Don Limpiezas: antes de quitar apps",
+        "drivers" => "Don Limpiezas: antes de instalar controladores",
+        _ => return Err(format!("Motivo desconocido: {purpose}")),
+    };
+    blocking(move || system::create_restore_point(description)).await
 }
 
 #[tauri::command]
@@ -144,6 +152,47 @@ async fn update_program(app: tauri::AppHandle, id: String) -> Result<updater::Up
 }
 
 #[tauri::command]
+fn cloud_roots() -> Vec<cloud::CloudRoot> {
+    cloud::roots()
+}
+
+#[tauri::command]
+async fn scan_cloud(
+    app: tauri::AppHandle,
+    roots: Vec<String>,
+    min_size: u64,
+    min_age_days: u64,
+) -> Result<cloud::CloudScan, String> {
+    blocking(move || cloud::scan(&roots, min_size, min_age_days, &app.state::<cloud::State>())).await
+}
+
+#[tauri::command]
+async fn free_cloud_files(app: tauri::AppHandle, paths: Vec<String>) -> Result<cloud::FreeResult, String> {
+    blocking(move || cloud::free(&paths, &app.state::<cloud::State>())).await
+}
+
+#[tauri::command]
+async fn list_drivers() -> Result<Vec<drivers::Driver>, String> {
+    blocking(drivers::list).await
+}
+
+#[tauri::command]
+async fn search_driver_updates(app: tauri::AppHandle) -> Result<Vec<drivers::DriverUpdate>, String> {
+    blocking(move || drivers::search(&app.state::<drivers::State>())).await
+}
+
+/// Descarga e instala con Windows Update; puede tardar varios minutos.
+#[tauri::command]
+async fn install_driver_updates(app: tauri::AppHandle, ids: Vec<String>) -> Result<drivers::InstallResult, String> {
+    blocking(move || drivers::install(&ids, system::is_admin(), &app.state::<drivers::State>())).await
+}
+
+#[tauri::command]
+fn open_vendor_page(vendor: String) -> Result<(), String> {
+    drivers::open_vendor_page(&vendor)
+}
+
+#[tauri::command]
 async fn list_startup() -> Result<Vec<startup::StartupEntry>, String> {
     blocking(|| Ok(startup::list())).await
 }
@@ -163,6 +212,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(duplicates::State::default())
         .manage(updater::State::default())
+        .manage(cloud::State::default())
+        .manage(drivers::State::default())
         .invoke_handler(tauri::generate_handler![
             is_admin,
             relaunch_as_admin,
@@ -185,6 +236,13 @@ pub fn run() {
             set_startup_enabled,
             list_updates,
             update_program,
+            cloud_roots,
+            scan_cloud,
+            free_cloud_files,
+            list_drivers,
+            search_driver_updates,
+            install_driver_updates,
+            open_vendor_page,
         ])
         .run(tauri::generate_context!())
         .expect("error al iniciar la aplicación");

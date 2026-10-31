@@ -1,4 +1,4 @@
-//! Privilegios de administrador y procesos en ejecución.
+//! Privilegios de administrador, puntos de restauración y procesos en ejecución.
 
 use crate::ps;
 use std::collections::HashSet;
@@ -22,6 +22,18 @@ pub fn relaunch_as_admin() -> Result<(), String> {
     ps::run(&script)
         .map(|_| ())
         .map_err(|_| "No se concedieron permisos de administrador.".into())
+}
+
+/// Crea un punto de restauración. Windows solo permite uno cada 24 horas por
+/// defecto, en cuyo caso se devuelve el aviso en lugar de un error.
+pub fn create_restore_point(description: &str) -> Result<String, String> {
+    ps::run(&format!(
+        "Checkpoint-Computer -Description {} -RestorePointType MODIFY_SETTINGS \
+         -ErrorAction Stop -WarningAction SilentlyContinue -WarningVariable w\n\
+         if ($w) {{ 'AVISO: ' + $w[0] }} else {{ 'Punto de restauración creado.' }}",
+        ps::quote(description)
+    ))
+    .map_err(|e| format!("No se pudo crear el punto de restauración (¿está activada la Protección del sistema?): {e}"))
 }
 
 /// Nombres de ejecutable (en minúsculas) de los procesos en marcha.

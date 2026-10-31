@@ -11,7 +11,7 @@
 | 6 | Duplicate Finder | `add-duplicate-finder` | Implementado, pendiente de probar en la app y archivar |
 | 7 | Software Updater | `add-software-updater` | Implementado, pendiente de probar en la app y archivar |
 | 8 | Health Check | `add-health-check` | Implementado, pendiente de probar en la app y archivar |
-| 9 | Nubes | `add-cloud-drive-cleaner` | Borrador |
-| 10 | Controladores | `add-driver-updater` | Borrador |
+| 9 | Cloud Drive Cleaner | `add-cloud-drive-cleaner` | Implementado, pendiente de probar en la app y archivar |
+| 10 | Driver Updater | `add-driver-updater` | Implementado, pendiente de probar en la app y archivar |
 
 Flujo por cambio: revisar el borrador → `/opsx:propose` para completar specs, design y tasks → `/opsx:apply` → `/opsx:archive`.

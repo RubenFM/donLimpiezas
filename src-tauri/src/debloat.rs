@@ -113,20 +113,6 @@ pub fn list(include_provisioned: bool) -> Result<Vec<BloatApp>, String> {
         .collect())
 }
 
-/// Crea un punto de restauración. Windows solo permite uno cada 24 horas por
-/// defecto, en cuyo caso se devuelve el aviso en lugar de un error.
-pub fn create_restore_point() -> Result<String, String> {
-    let out = ps::run(
-        "Checkpoint-Computer -Description 'Don Limpiezas: antes de quitar apps' -RestorePointType MODIFY_SETTINGS \
-         -ErrorAction Stop -WarningAction SilentlyContinue -WarningVariable w\n\
-         if ($w) { 'AVISO: ' + $w[0] } else { 'Punto de restauración creado.' }",
-    )
-    .map_err(|e| {
-        format!("No se pudo crear el punto de restauración (¿está activada la Protección del sistema?): {e}")
-    })?;
-    Ok(out)
-}
-
 pub fn remove(ids: &[String], all_users: bool) -> Result<Vec<RemoveResult>, String> {
     // Solo se aceptan ids del catálogo; además así es seguro incrustarlos en el script.
     let names = ids

@@ -740,3 +740,34 @@ dialog p {
 .card-value {
   font-size: 16px;
 }
+
+/* Módulos con varias secciones (Driver Updater). */
+.sections {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sections section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 0;
+}
+
+.box .empty {
+  margin: 20px 16px;
+}

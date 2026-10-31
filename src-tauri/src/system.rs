@@ -2,7 +2,10 @@
 
 use crate::ps;
 use std::collections::HashSet;
+use std::ffi::OsStr;
+use std::os::windows::ffi::OsStrExt;
 use windows_sys::Win32::Foundation::{CloseHandle, INVALID_HANDLE_VALUE};
+use windows_sys::Win32::UI::Shell::{ShellExecuteExW, SHELLEXECUTEINFOW};
 use windows_sys::Win32::System::Diagnostics::ToolHelp::{
     CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W, TH32CS_SNAPPROCESS,
 };
@@ -34,6 +37,23 @@ pub fn create_restore_point(description: &str) -> Result<String, String> {
         ps::quote(description)
     ))
     .map_err(|e| format!("No se pudo crear el punto de restauración (¿está activada la Protección del sistema?): {e}"))
+}
+
+/// Abre una URL, un URI (`ms-windows-store:`, `shell:`) o una carpeta como lo
+/// haría el Explorador. `verb` es `open` o `explore`.
+pub fn shell_open(target: &str, verb: &str) -> Result<(), String> {
+    let wide = |s: &str| -> Vec<u16> { OsStr::new(s).encode_wide().chain(Some(0)).collect() };
+    let (verb_w, target_w) = (wide(verb), wide(target));
+    let mut info: SHELLEXECUTEINFOW = unsafe { std::mem::zeroed() };
+    info.cbSize = std::mem::size_of::<SHELLEXECUTEINFOW>() as u32;
+    info.lpVerb = verb_w.as_ptr();
+    info.lpFile = target_w.as_ptr();
+    info.nShow = 1; // SW_SHOWNORMAL
+    if unsafe { ShellExecuteExW(&mut info) } != 0 {
+        Ok(())
+    } else {
+        Err(format!("No se pudo abrir {target}."))
+    }
 }
 
 /// Nombres de ejecutable (en minúsculas) de los procesos en marcha.

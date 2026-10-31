@@ -43,7 +43,7 @@ impl Source {
         Source::CommonFolder,
     ];
 
-    fn label(self) -> &'static str {
+    pub(crate) fn label(self) -> &'static str {
         match self {
             Source::HkcuRun => "Registro (usuario)",
             Source::HklmRun => "Registro (equipo)",
@@ -51,6 +51,10 @@ impl Source {
             Source::UserFolder => "Carpeta de Inicio (usuario)",
             Source::CommonFolder => "Carpeta de Inicio (común)",
         }
+    }
+
+    pub(crate) fn from_label(label: &str) -> Option<Source> {
+        Source::ALL.into_iter().find(|s| s.label() == label)
     }
 
     /// Las entradas del equipo afectan a todos los usuarios.
@@ -239,6 +243,16 @@ pub fn list() -> Vec<StartupEntry> {
         (order, e.display_name.to_lowercase())
     });
     entries
+}
+
+/// Estado actual de una entrada, o `None` si ya no existe.
+pub(crate) fn current_state(source: Source, name: &str) -> Option<bool> {
+    if !read_entries(source).iter().any(|e| e.name == name) {
+        return None;
+    }
+    let approved = source.root().open_subkey_with_flags(source.approved_key(), KEY_READ).ok();
+    let value = approved.and_then(|k| k.get_raw_value(name).ok());
+    Some(is_enabled(value.as_ref().map(|v| v.bytes.as_ref())))
 }
 
 /// Comprueba que se puede cambiar la entrada `(source, name)`.

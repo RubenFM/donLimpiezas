@@ -1,13 +1,9 @@
 //! Inventario de controladores y actualización exclusivamente con Windows Update.
 
-use crate::{log, ps};
+use crate::{log, ps, system};
 use serde::{Deserialize, Serialize};
-use std::ffi::OsStr;
-use std::os::windows::ffi::OsStrExt;
 use std::sync::Mutex;
-use windows_sys::Win32::UI::Shell::{ShellExecuteExW, SHELLEXECUTEINFOW};
 
-const SW_SHOWNORMAL: i32 = 1;
 const SEARCH: &str = "IsInstalled=0 and Type='Driver' and IsHidden=0";
 
 /// Resultado de la última búsqueda, para validar qué se puede instalar.
@@ -166,18 +162,7 @@ fn vendor_url(vendor: &str) -> Option<&'static str> {
 /// Abre en el navegador la página oficial de controladores de un fabricante de la lista.
 pub fn open_vendor_page(vendor: &str) -> Result<(), String> {
     let url = vendor_url(vendor).ok_or_else(|| format!("Fabricante desconocido: {vendor}"))?;
-    let wide = |s: &str| -> Vec<u16> { OsStr::new(s).encode_wide().chain(Some(0)).collect() };
-    let (verb, file) = (wide("open"), wide(url));
-    let mut info: SHELLEXECUTEINFOW = unsafe { std::mem::zeroed() };
-    info.cbSize = std::mem::size_of::<SHELLEXECUTEINFOW>() as u32;
-    info.lpVerb = verb.as_ptr();
-    info.lpFile = file.as_ptr();
-    info.nShow = SW_SHOWNORMAL;
-    if unsafe { ShellExecuteExW(&mut info) } != 0 {
-        Ok(())
-    } else {
-        Err("No se pudo abrir el navegador.".into())
-    }
+    system::shell_open(url, "open").map_err(|_| "No se pudo abrir el navegador.".into())
 }
 
 #[cfg(test)]

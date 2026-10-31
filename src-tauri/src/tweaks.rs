@@ -316,6 +316,31 @@ pub struct TweakResult {
     error: Option<String>,
 }
 
+impl TweakResult {
+    pub(crate) fn ok(&self) -> bool {
+        self.ok
+    }
+
+    pub(crate) fn error(&self) -> Option<&str> {
+        self.error.as_deref()
+    }
+}
+
+pub(crate) struct TweakInfo {
+    pub name: &'static str,
+    pub applied: bool,
+    pub restorable: bool,
+}
+
+pub(crate) fn info(id: &str) -> Option<TweakInfo> {
+    let tweak = CATALOG.iter().find(|t| t.id == id)?;
+    Some(TweakInfo {
+        name: tweak.name,
+        applied: is_applied(tweak),
+        restorable: load(&store_path()).contains_key(id),
+    })
+}
+
 pub fn list() -> Vec<TweakState> {
     let store = load(&store_path());
     CATALOG

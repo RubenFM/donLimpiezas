@@ -37,6 +37,11 @@ Limpiador de sistema y eliminador de bloatware para Windows 10/11, hecho con Tau
 
 Nunca se tocan Microsoft Store, los runtimes (VCLibs, .NET, UI.Xaml), el shell ni Seguridad de Windows.
 
+**Disk Analyzer**
+- Analiza un disco o una carpeta y muestra qué ocupa espacio, con barras y porcentajes
+- Se navega entrando en carpetas y con la ruta de migas, sin volver a analizar; abre la carpeta en el
+  Explorador. No borra nada. Los archivos solo en la nube cuentan 0 bytes
+
 **Duplicate Finder**
 - Busca archivos con el mismo contenido (hash BLAKE3) en Documentos, Descargas, Imágenes, Vídeos y
   Música, o en las carpetas que elijas, con tamaño mínimo, progreso y cancelación
@@ -76,6 +81,12 @@ Nunca se tocan Microsoft Store, los runtimes (VCLibs, .NET, UI.Xaml), el shell n
 - Busca e instala actualizaciones de controladores solo con Windows Update (instalar requiere
   administrador), con punto de restauración previo. Registro en `%LOCALAPPDATA%\DonLimpiezas\drivers.log`
 - Para tarjetas NVIDIA, AMD o Intel, botón a la herramienta oficial del fabricante
+
+**History**
+- Todo lo que han cambiado los módulos (a partir de sus logs), agrupado por día y filtrable
+- Deshacer cuando sigue siendo válido: reactivar o desactivar un programa de inicio, restaurar o
+  volver a aplicar un ajuste, buscar en Microsoft Store una app quitada, abrir la papelera o volver
+  a descargar un archivo liberado de la nube
 
 ## Requisitos (en Windows)
 
@@ -122,16 +133,19 @@ src/
     custom-clean.ts   Custom Clean
     uninstaller.ts    Uninstaller
     bloatware-remover.ts  Bloatware Remover
+    disk-analyzer.ts      Disk Analyzer
     duplicate-finder.ts   Duplicate Finder
     cloud-drive-cleaner.ts  Cloud Drive Cleaner
     performance-optimizer.ts  Performance Optimizer
     startup-manager.ts    Startup Manager
     software-updater.ts   Software Updater
     driver-updater.ts     Driver Updater
+    history.ts            History
 src-tauri/src/
   lib.rs              Comandos expuestos a la interfaz
   cleaner.rs          Categorías de limpieza, análisis y borrado
   debloat.rs          Catálogo de bloatware y desinstalación vía PowerShell
+  diskusage.rs        Tamaño por carpetas para Disk Analyzer
   duplicates.rs       Búsqueda de duplicados por contenido y papelera
   tweaks.rs           Catálogo de ajustes reversibles y valores originales
   cloud.rs            Carpetas de OneDrive/Dropbox y liberar espacio local
@@ -142,6 +156,7 @@ src-tauri/src/
   updater.rs          Lectura de winget y actualización de programas
   sysinfo.rs          Windows, memoria, discos y tiempo encendido
   log.rs              Registro de cambios en %LOCALAPPDATA%\DonLimpiezas
+  history.rs          Lectura de todos los logs y deshacer
   ps.rs               Ejecución de PowerShell sin ventana
   system.rs           Administrador, elevación, puntos de restauración y procesos
 ```

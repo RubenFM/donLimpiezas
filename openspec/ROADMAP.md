@@ -13,5 +13,7 @@
 | 8 | Health Check | `add-health-check` | Implementado, pendiente de probar en la app y archivar |
 | 9 | Cloud Drive Cleaner | `add-cloud-drive-cleaner` | Implementado, pendiente de probar en la app y archivar |
 | 10 | Driver Updater | `add-driver-updater` | Implementado, pendiente de probar en la app y archivar |
+| 11 | History | `add-activity-history` | Implementado, pendiente de probar en la app y archivar |
+| 12 | Disk Analyzer | `add-disk-analyzer` | Implementado, pendiente de probar en la app y archivar |
 
 Flujo por cambio: revisar el borrador → `/opsx:propose` para completar specs, design y tasks → `/opsx:apply` → `/opsx:archive`.

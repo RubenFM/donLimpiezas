@@ -87,6 +87,10 @@ fn names_from_json(json: &str) -> Result<Vec<String>, String> {
     serde_json::from_str(json).map_err(|e| format!("Respuesta inesperada de PowerShell: {e}"))
 }
 
+pub(crate) fn display_name(id: &str) -> Option<&'static str> {
+    CATALOG.iter().find(|e| e.id == id).map(|e| e.name)
+}
+
 pub fn list(include_provisioned: bool) -> Result<Vec<BloatApp>, String> {
     let installed = names_from_json(&ps::run(
         "ConvertTo-Json -Compress -InputObject @(Get-AppxPackage | Select-Object -ExpandProperty Name)",

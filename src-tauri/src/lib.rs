@@ -2,8 +2,10 @@ mod cleaner;
 mod cloud;
 mod cmdline;
 mod debloat;
+mod diskusage;
 mod drivers;
 mod duplicates;
+mod history;
 mod log;
 mod ps;
 mod startup;
@@ -192,6 +194,43 @@ fn open_vendor_page(vendor: String) -> Result<(), String> {
     drivers::open_vendor_page(&vendor)
 }
 
+/// Emite `disk-progress` mientras analiza; se detiene con `cancel_disk_analysis`.
+#[tauri::command]
+async fn analyze_disk(app: tauri::AppHandle, path: String) -> Result<diskusage::Summary, String> {
+    blocking(move || {
+        let state = app.state::<diskusage::State>();
+        diskusage::analyze(&path, &state, |progress| {
+            let _ = app.emit("disk-progress", progress);
+        })
+    })
+    .await
+}
+
+#[tauri::command]
+fn cancel_disk_analysis(state: tauri::State<diskusage::State>) {
+    state.cancel();
+}
+
+#[tauri::command]
+fn disk_children(state: tauri::State<diskusage::State>, path: String) -> Result<diskusage::Folder, String> {
+    diskusage::children(&path, &state)
+}
+
+#[tauri::command]
+fn open_in_explorer(state: tauri::State<diskusage::State>, path: String) -> Result<(), String> {
+    diskusage::open_in_explorer(&path, &state)
+}
+
+#[tauri::command]
+async fn list_history() -> Result<Vec<history::Entry>, String> {
+    blocking(|| Ok(history::list())).await
+}
+
+#[tauri::command]
+async fn undo_history(id: String) -> Result<String, String> {
+    blocking(move || history::undo(&id, system::is_admin())).await
+}
+
 #[tauri::command]
 async fn list_startup() -> Result<Vec<startup::StartupEntry>, String> {
     blocking(|| Ok(startup::list())).await
@@ -214,6 +253,7 @@ pub fn run() {
         .manage(updater::State::default())
         .manage(cloud::State::default())
         .manage(drivers::State::default())
+        .manage(diskusage::State::default())
         .invoke_handler(tauri::generate_handler![
             is_admin,
             relaunch_as_admin,
@@ -243,6 +283,12 @@ pub fn run() {
             search_driver_updates,
             install_driver_updates,
             open_vendor_page,
+            analyze_disk,
+            cancel_disk_analysis,
+            disk_children,
+            open_in_explorer,
+            list_history,
+            undo_history,
         ])
         .run(tauri::generate_context!())
         .expect("error al iniciar la aplicación");

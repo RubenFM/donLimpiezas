@@ -232,12 +232,45 @@ pub fn free(paths: &[String], state: &State) -> Result<FreeResult, String> {
             result.freed += 1;
             result.bytes += size;
             known.remove(&key(Path::new(path)));
-            let _ = log::append("cloud.log", path);
+            let _ = log::append("cloud.log", &format!("{path}\tliberado"));
         } else {
             result.failed.push(path.clone());
         }
     }
     Ok(result)
+}
+
+/// El archivo existe y ya no ocupa espacio local (o se ha pedido liberarlo).
+pub(crate) fn is_freed(path: &str) -> bool {
+    fs::symlink_metadata(path)
+        .map(|m| matches!(classify(m.file_attributes()), FileState::Unpinned | FileState::CloudOnly))
+        .unwrap_or(false)
+}
+
+fn in_synced_folder(path: &str, roots: &[CloudRoot]) -> bool {
+    let k = key(Path::new(path));
+    roots.iter().any(|r| k.starts_with(&format!("{}\\", key(Path::new(&r.path)))))
+}
+
+/// Vuelve a descargar un archivo liberado y lo marca como "Mantener siempre en
+/// este dispositivo".
+pub(crate) fn keep_local(path: &str) -> Result<(), String> {
+    if !in_synced_folder(path, &roots()) {
+        return Err("El archivo no está en una carpeta sincronizada.".into());
+    }
+    if !is_freed(path) {
+        return Err("El archivo ya está en este equipo.".into());
+    }
+    let _ = Command::new("attrib")
+        .args(["+P", "-U", path])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output();
+    let pinned = fs::symlink_metadata(path).map(|m| m.file_attributes() & PINNED != 0).unwrap_or(false);
+    if !pinned {
+        return Err("No se pudo marcar el archivo para descargarlo.".into());
+    }
+    let _ = log::append("cloud.log", &format!("{path}\tdescargado"));
+    Ok(())
 }
 
 #[cfg(test)]
@@ -265,6 +298,15 @@ mod tests {
         assert_eq!(roots[1].name, "Dropbox (empresa)");
         assert!(parse_dropbox("no es json").is_empty());
         assert!(parse_dropbox("{}").is_empty());
+    }
+
+    #[test]
+    fn carpeta_sincronizada() {
+        let roots = [CloudRoot { name: "OneDrive".into(), path: r"C:\Users\ana\OneDrive".into() }];
+        assert!(in_synced_folder(r"C:\Users\ana\OneDrive\a.mp4", &roots));
+        assert!(in_synced_folder(r"c:\users\ana\onedrive\Fotos\b.jpg", &roots));
+        assert!(!in_synced_folder(r"C:\Users\ana\OneDriveFalso\a.mp4", &roots));
+        assert!(!in_synced_folder(r"C:\Windows\explorer.exe", &roots));
     }
 
     #[test]

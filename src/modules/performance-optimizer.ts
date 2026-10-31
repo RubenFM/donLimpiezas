@@ -22,6 +22,8 @@ const template = `
     <button data-el="revert-all" class="btn" disabled>Restaurar todo</button>
     <span data-el="summary" class="summary"></span>
   </div>
+  <p class="row-note">Las casillas marcadas son los ajustes que se aplicarán al pulsar «Aplicar seleccionados».
+    Mientras un ajuste esté «Sin aplicar», Windows sigue con su comportamiento por defecto.</p>
   <div data-el="list" class="list">
     <p class="empty">Cargando ajustes…</p>
   </div>
@@ -56,7 +58,7 @@ function render(root: HTMLElement) {
           .map((t) => {
             const pills = [
               t.admin ? '<span class="pill">Admin</span>' : "",
-              t.applied ? '<span class="pill ok">Aplicado</span>' : "",
+              t.applied ? '<span class="pill ok">Aplicado</span>' : '<span class="pill warn">Sin aplicar</span>',
             ].join(" ");
             const body = `
               <div class="row-main">

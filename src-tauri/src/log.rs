@@ -4,7 +4,8 @@ use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-fn dir() -> PathBuf {
+/// Carpeta de datos de la app (logs y estado que debe sobrevivir entre sesiones).
+pub fn data_dir() -> PathBuf {
     std::env::var_os("LOCALAPPDATA")
         .map(PathBuf::from)
         .unwrap_or_else(std::env::temp_dir)
@@ -13,7 +14,7 @@ fn dir() -> PathBuf {
 
 /// Añade `line` al final de `file`, precedida de la fecha local en ISO 8601.
 pub fn append(file: &str, line: &str) -> Result<(), String> {
-    append_in(&dir(), file, line)
+    append_in(&data_dir(), file, line)
 }
 
 fn append_in(dir: &Path, file: &str, line: &str) -> Result<(), String> {

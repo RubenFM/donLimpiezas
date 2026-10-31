@@ -1,11 +1,15 @@
 mod cleaner;
 mod cmdline;
 mod debloat;
+mod duplicates;
 mod log;
 mod ps;
 mod startup;
 mod system;
+mod tweaks;
 mod uninstaller;
+
+use tauri::{Emitter, Manager};
 
 /// Ejecuta trabajo pesado (disco, PowerShell) fuera del hilo de la interfaz.
 async fn blocking<T, F>(f: F) -> Result<T, String>
@@ -73,6 +77,55 @@ async fn remove_bloat(
 }
 
 #[tauri::command]
+async fn default_duplicate_folders() -> Result<Vec<String>, String> {
+    blocking(duplicates::default_folders).await
+}
+
+/// Emite `duplicates-progress` mientras analiza; se detiene con `cancel_duplicates`.
+#[tauri::command]
+async fn find_duplicates(
+    app: tauri::AppHandle,
+    folders: Vec<String>,
+    min_size: u64,
+) -> Result<duplicates::ScanResult, String> {
+    blocking(move || {
+        let state = app.state::<duplicates::State>();
+        duplicates::find(&folders, min_size, &state, |progress| {
+            let _ = app.emit("duplicates-progress", progress);
+        })
+    })
+    .await
+}
+
+#[tauri::command]
+fn cancel_duplicates(state: tauri::State<duplicates::State>) {
+    state.cancel();
+}
+
+#[tauri::command]
+async fn trash_duplicates(
+    app: tauri::AppHandle,
+    paths: Vec<String>,
+) -> Result<duplicates::TrashResult, String> {
+    blocking(move || duplicates::trash(&paths, &app.state::<duplicates::State>())).await
+}
+
+#[tauri::command]
+async fn list_tweaks() -> Result<Vec<tweaks::TweakState>, String> {
+    blocking(|| Ok(tweaks::list())).await
+}
+
+#[tauri::command]
+async fn apply_tweaks(ids: Vec<String>) -> Result<Vec<tweaks::TweakResult>, String> {
+    blocking(move || tweaks::apply(&ids, system::is_admin())).await
+}
+
+#[tauri::command]
+async fn revert_tweaks(ids: Vec<String>) -> Result<Vec<tweaks::TweakResult>, String> {
+    blocking(move || tweaks::revert(&ids, system::is_admin())).await
+}
+
+#[tauri::command]
 async fn list_startup() -> Result<Vec<startup::StartupEntry>, String> {
     blocking(|| Ok(startup::list())).await
 }
@@ -89,6 +142,8 @@ async fn set_startup_enabled(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .manage(duplicates::State::default())
         .invoke_handler(tauri::generate_handler![
             is_admin,
             relaunch_as_admin,
@@ -99,6 +154,13 @@ pub fn run() {
             list_bloat,
             create_restore_point,
             remove_bloat,
+            default_duplicate_folders,
+            find_duplicates,
+            cancel_duplicates,
+            trash_duplicates,
+            list_tweaks,
+            apply_tweaks,
+            revert_tweaks,
             list_startup,
             set_startup_enabled,
         ])

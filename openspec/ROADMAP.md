@@ -7,8 +7,8 @@
 | 3 | Custom Clean | `extend-custom-clean` | Implementado, pendiente de probar en la app y archivar |
 | — | Apps preinstaladas | — | Implementado: `specs/bloatware-removal` |
 | 4 | Uninstaller | `add-uninstaller` | Implementado, pendiente de probar en la app y archivar |
-| 5 | Rendimiento | `add-performance-optimizer` | Borrador |
-| 6 | Duplicados | `add-duplicate-finder` | Borrador |
+| 5 | Performance Optimizer | `add-performance-optimizer` | Implementado, pendiente de probar en la app y archivar |
+| 6 | Duplicate Finder | `add-duplicate-finder` | Implementado, pendiente de probar en la app y archivar |
 | 7 | Actualizar software | `add-software-updater` | Borrador |
 | 8 | Revisión | `add-health-check` | Borrador (agrega los anteriores) |
 | 9 | Nubes | `add-cloud-drive-cleaner` | Borrador |

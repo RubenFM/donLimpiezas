@@ -32,6 +32,20 @@ Limpiador de sistema y eliminador de bloatware para Windows 10/11, hecho con Tau
 
 Nunca se tocan Microsoft Store, los runtimes (VCLibs, .NET, UI.Xaml), el shell ni Seguridad de Windows.
 
+**Duplicate Finder**
+- Busca archivos con el mismo contenido (hash BLAKE3) en Documentos, Descargas, Imágenes, Vídeos y
+  Música, o en las carpetas que elijas, con tamaño mínimo, progreso y cancelación
+- Ignora los archivos de OneDrive que solo están en la nube, para no descargarlos
+- "Conservar el más antiguo" selecciona el resto de copias; nunca deja borrar todas las de un grupo
+- Envía los archivos a la papelera y lo registra en `%LOCALAPPDATA%\DonLimpiezas\duplicates.log`
+
+**Performance Optimizer**
+- Catálogo de ajustes de registro revisados: telemetría, anuncios y sugerencias, Widgets, Copilot,
+  búsqueda web del menú Inicio y grabación de juegos en segundo plano
+- Muestra cuáles están ya aplicados; los aplica guardando antes el valor original en
+  `%LOCALAPPDATA%\DonLimpiezas\tweaks.json` y los restaura exactamente, uno a uno o todos
+- Guarda un registro en `%LOCALAPPDATA%\DonLimpiezas\tweaks.log`
+
 **Startup Manager**
 - Lista los programas que se abren al iniciar sesión: claves `Run` del registro (usuario, equipo y
   equipo 32 bits) y carpetas de Inicio (usuario y común), con editor y destino de los accesos directos
@@ -75,11 +89,15 @@ src/
     custom-clean.ts   Custom Clean
     uninstaller.ts    Uninstaller
     bloatware-remover.ts  Bloatware Remover
+    duplicate-finder.ts   Duplicate Finder
+    performance-optimizer.ts  Performance Optimizer
     startup-manager.ts    Startup Manager
 src-tauri/src/
   lib.rs              Comandos expuestos a la interfaz
   cleaner.rs          Categorías de limpieza, análisis y borrado
   debloat.rs          Catálogo de bloatware y desinstalación vía PowerShell
+  duplicates.rs       Búsqueda de duplicados por contenido y papelera
+  tweaks.rs           Catálogo de ajustes reversibles y valores originales
   startup.rs          Programas de inicio y su estado en StartupApproved
   uninstaller.rs      Programas instalados y desinstalación con su desinstalador
   cmdline.rs          Interpretación de líneas de comandos registradas

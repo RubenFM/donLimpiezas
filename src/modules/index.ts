@@ -2,6 +2,8 @@ import type { Module } from "./module";
 import { customClean } from "./custom-clean";
 import { uninstaller } from "./uninstaller";
 import { bloatwareRemover } from "./bloatware-remover";
+import { duplicateFinder } from "./duplicate-finder";
+import { performanceOptimizer } from "./performance-optimizer";
 import { startupManager } from "./startup-manager";
 
 /**
@@ -10,4 +12,11 @@ import { startupManager } from "./startup-manager";
  * Cloud Drive Cleaner, Performance Optimizer, Startup Manager, Software Updater,
  * Driver Updater.
  */
-export const modules: Module[] = [customClean, uninstaller, bloatwareRemover, startupManager];
+export const modules: Module[] = [
+  customClean,
+  uninstaller,
+  bloatwareRemover,
+  duplicateFinder,
+  performanceOptimizer,
+  startupManager,
+];

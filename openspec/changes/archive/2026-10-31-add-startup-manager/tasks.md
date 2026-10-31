@@ -20,12 +20,12 @@
 ## 4. Interfaz
 
 - [x] 4.1 Crear `src/modules/startup-manager.ts` con su icono, botón "Actualizar" y la lista, registrarlo en `src/modules/index.ts` entre Performance Optimizer y Software Updater, y verificar que `npx tsc --noEmit` y `npx vite build` pasan
-- [ ] 4.2 Renderizar las entradas agrupadas por origen con interruptor, etiqueta "Admin", destino y editor; el interruptor revierte su estado si el backend devuelve error. Verificar con `npm run tauri dev` que la lista coincide con la pestaña "Inicio" del Administrador de tareas
+- [x] 4.2 Renderizar las entradas agrupadas por origen con interruptor, etiqueta "Admin", destino y editor; el interruptor revierte su estado si el backend devuelve error. Verificar con `npm run tauri dev` que la lista coincide con la pestaña "Inicio" del Administrador de tareas
 - [x] 4.3 Añadir los estilos del interruptor en `src/styles.css` con soporte de modo claro y oscuro, y verificarlo visualmente en ambos modos
 
 ## 5. Integración y documentación
 
-- [ ] 5.1 Desactivar una entrada de usuario desde Don Limpiezas y comprobar que el Administrador de tareas la muestra deshabilitada; reactivarla desde el Administrador de tareas y comprobar que Don Limpiezas lo refleja tras "Actualizar"
+- [x] 5.1 Desactivar una entrada de usuario desde Don Limpiezas y comprobar que el Administrador de tareas la muestra deshabilitada; reactivarla desde el Administrador de tareas y comprobar que Don Limpiezas lo refleja tras "Actualizar"
 - [x] 5.2 Actualizar la sección "Funciones" y "Estructura" del `README.md` con el gestor de inicio y verificar que describe los orígenes cubiertos
 
 ## Workflow follow-up

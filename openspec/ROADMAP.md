@@ -2,8 +2,8 @@
 
 | # | Módulo | Cambio | Estado |
 |---|--------|--------|--------|
-| 1 | Navegación lateral | `add-sidebar-navigation` | Implementado, pendiente de probar en la app y archivar |
-| 2 | Startup Manager | `add-startup-manager` | Implementado, pendiente de probar en la app y archivar |
+| 1 | Navegación lateral | `add-sidebar-navigation` | Hecho: `specs/app-navigation` |
+| 2 | Startup Manager | `add-startup-manager` | Hecho: `specs/startup-programs` |
 | 3 | Limpieza | `extend-custom-clean` | Borrador (base implementada: `specs/system-cleanup`) |
 | — | Apps preinstaladas | — | Implementado: `specs/bloatware-removal` |
 | 4 | Desinstalador | `add-uninstaller` | Borrador |

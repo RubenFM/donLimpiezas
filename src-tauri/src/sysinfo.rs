@@ -66,6 +66,22 @@ fn memory() -> (u64, u64) {
     (status.ullTotalPhys, status.ullTotalPhys - status.ullAvailPhys)
 }
 
+/// Espacio libre y total de una unidad (raíz como `C:\`).
+fn disk_space(root: &[u16]) -> Option<(u64, u64)> {
+    let mut wide: Vec<u16> = root.to_vec();
+    wide.push(0);
+    let (mut free, mut total) = (0u64, 0u64);
+    let ok = unsafe { GetDiskFreeSpaceExW(wide.as_ptr(), &mut free, &mut total, std::ptr::null_mut()) };
+    (ok != 0).then_some((free, total))
+}
+
+/// Espacio libre del disco del sistema.
+pub(crate) fn system_drive_free() -> Option<u64> {
+    let drive = std::env::var("SystemDrive").unwrap_or_else(|_| "C:".into());
+    let root: Vec<u16> = format!("{drive}\\").encode_utf16().collect();
+    disk_space(&root).map(|(free, _)| free)
+}
+
 fn fixed_disks() -> Vec<Disk> {
     let mut buf = [0u16; 512];
     let len = unsafe { GetLogicalDriveStringsW(buf.len() as u32, buf.as_mut_ptr()) } as usize;
@@ -79,13 +95,8 @@ fn fixed_disks() -> Vec<Disk> {
             if unsafe { GetDriveTypeW(wide.as_ptr()) } != DRIVE_FIXED {
                 return None;
             }
-            let (mut free, mut total) = (0u64, 0u64);
-            let ok = unsafe { GetDiskFreeSpaceExW(wide.as_ptr(), &mut free, &mut total, std::ptr::null_mut()) };
-            (ok != 0).then(|| Disk {
-                letter: String::from_utf16_lossy(root).trim_end_matches('\\').to_string(),
-                free,
-                total,
-            })
+            let (free, total) = disk_space(root)?;
+            Some(Disk { letter: String::from_utf16_lossy(root).trim_end_matches('\\').to_string(), free, total })
         })
         .collect()
 }

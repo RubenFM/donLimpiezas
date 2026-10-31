@@ -6,7 +6,7 @@ Analizar y liberar espacio en disco borrando archivos temporales, cachés y rest
 
 Implementado en `src-tauri/src/cleaner.rs` (comandos `scan_cleanup` y `run_cleanup`) y en el módulo Custom Clean (`src/modules/custom-clean.ts`).
 
-Categorías actuales (las de Privacidad van desmarcadas por defecto):
+Categorías actuales (las de Privacidad y `windows_components` van desmarcadas por defecto):
 
 | id | Grupo | Admin | Origen |
 |----|-------|-------|--------|
@@ -21,6 +21,7 @@ Categorías actuales (las de Privacidad van desmarcadas por defecto):
 | `crash_dumps` | Windows | No | `%LOCALAPPDATA%\CrashDumps` y WER del usuario |
 | `system_crash_dumps` | Windows | Sí | `%SystemRoot%\Minidump` y WER de `%ProgramData%` |
 | `windows_update` | Windows | Sí | `%SystemRoot%\SoftwareDistribution\Download` |
+| `windows_components` | Windows | Sí | `DISM /Online /Cleanup-Image /StartComponentCleanup` (desmarcada; tamaño desconocido) |
 | `chrome_cache` | Navegadores | No | `Cache`, `Code Cache`, `GPUCache` de cada perfil |
 | `edge_cache` | Navegadores | No | Ídem para Edge |
 | `brave_cache` | Navegadores | No | Ídem para Brave |

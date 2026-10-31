@@ -14,7 +14,8 @@ Limpiador de sistema y eliminador de bloatware para Windows 10/11, hecho con Tau
 - Papelera de reciclaje
 - Caché de miniaturas, iconos y sombreadores DirectX; Prefetch y logs de CBS/DISM
 - Volcados e informes de errores (usuario y sistema)
-- Descargas de Windows Update
+- Descargas de Windows Update y, desmarcada por defecto, limpieza de componentes antiguos con DISM
+  (como administrador; tarda varios minutos)
 - Caché de Chrome, Edge, Brave y Firefox (no toca historial, contraseñas ni sesiones)
 - Caché de Discord, Spotify, Visual Studio Code y Steam
 - Privacidad, desmarcada por defecto: historial y cookies de Chrome, Edge y Brave, cookies de
@@ -65,6 +66,9 @@ Nunca se tocan Microsoft Store, los runtimes (VCLibs, .NET, UI.Xaml), el shell n
 **Startup Manager**
 - Lista los programas que se abren al iniciar sesión: claves `Run` del registro (usuario, equipo y
   equipo 32 bits) y carpetas de Inicio (usuario y común), con editor y destino de los accesos directos
+- También tareas programadas de terceros que se lanzan al iniciar sesión o arrancar, y servicios
+  automáticos de terceros (al desactivarlos pasan a inicio manual, nunca a deshabilitados). Excluye
+  siempre lo de Windows y Microsoft Defender
 - Los activa y desactiva igual que el Administrador de tareas (`StartupApproved`): no borra nada y
   ambos muestran siempre lo mismo
 - Las entradas del equipo requieren administrador

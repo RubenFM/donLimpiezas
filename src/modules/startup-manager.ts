@@ -15,6 +15,14 @@ type StartupEntry = {
   admin: boolean;
 };
 
+/** Explicación de los orígenes que no se comportan como la pestaña Inicio. */
+const NOTES: Record<string, string> = {
+  scheduled_task: "Tareas del Programador de tareas que se ejecutan al iniciar sesión o al arrancar el equipo.",
+  service:
+    "Desactivar un servicio lo pasa a inicio manual: Windows lo arranca si un programa lo necesita. " +
+    "Surte efecto al reiniciar.",
+};
+
 const template = `
   <div class="toolbar">
     <button data-el="refresh" class="btn">Actualizar</button>
@@ -70,7 +78,9 @@ function render(root: HTMLElement) {
               </div>`;
           })
           .join("");
-        return `<h3 class="group">${escapeHtml(group)}</h3>${rows}`;
+        const note = NOTES[items[0].source];
+        return `<h3 class="group">${escapeHtml(group)}</h3>
+          ${note ? `<p class="row-note group-note">${note}</p>` : ""}${rows}`;
       })
       .join("");
     updateSummary();
@@ -116,7 +126,7 @@ function render(root: HTMLElement) {
 export const startupManager: Module = {
   id: "startup-manager",
   label: "Startup Manager",
-  description: "Programas que se abren al iniciar sesión en Windows.",
+  description: "Programas, tareas programadas y servicios que arrancan con Windows.",
   // Botón de encendido.
   icon: icon(
     `<path d="M12 3v8"/>

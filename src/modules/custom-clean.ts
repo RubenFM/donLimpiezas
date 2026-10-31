@@ -12,6 +12,7 @@ type CategoryScan = {
   defaultSelected: boolean;
   warning: string | null;
   running: boolean;
+  sizeKnown: boolean;
   bytes: number;
   files: number;
 };
@@ -76,8 +77,8 @@ function render(root: HTMLElement) {
                   ${notes.map((n) => `<div class="row-warning">${escapeHtml(n)}</div>`).join("")}
                 </div>
                 <div class="row-size">
-                  <strong>${formatBytes(c.bytes)}</strong>
-                  <span>${c.files.toLocaleString("es-ES")} elementos</span>
+                  <strong>${c.sizeKnown ? formatBytes(c.bytes) : "—"}</strong>
+                  <span>${c.sizeKnown ? `${c.files.toLocaleString("es-ES")} elementos` : "tamaño desconocido"}</span>
                 </div>
               </label>`;
           })
@@ -111,7 +112,8 @@ function render(root: HTMLElement) {
     );
     if (!ok) return;
 
-    setBusy(btnClean, true, "Limpiando…");
+    const slow = categories.some((c) => ids.includes(c.id) && !c.sizeKnown);
+    setBusy(btnClean, true, slow ? "Limpiando… (varios minutos)" : "Limpiando…");
     try {
       const results = await invoke<CleanResult[]>("run_cleanup", { ids });
       const freed = results.reduce((s, r) => s + r.freed, 0);
@@ -120,7 +122,8 @@ function render(root: HTMLElement) {
       showStatus(
         status,
         `Liberados <strong>${formatBytes(freed)}</strong> (${deleted.toLocaleString("es-ES")} elementos).` +
-          (failed ? ` ${failed.toLocaleString("es-ES")} archivos estaban en uso y se han omitido.` : ""),
+          (failed ? ` ${failed.toLocaleString("es-ES")} archivos estaban en uso y se han omitido.` : "") +
+          (slow ? " El espacio de los componentes de Windows es aproximado." : ""),
         "ok",
       );
     } catch (e) {

@@ -1,6 +1,8 @@
 //! Análisis y limpieza de archivos temporales, cachés y restos del sistema.
 
-use crate::system;
+use crate::{sysinfo, system};
+use std::os::windows::process::CommandExt;
+use std::process::Command;
 use serde::Serialize;
 use std::fs::{self, Metadata};
 use std::os::windows::fs::MetadataExt;
@@ -12,6 +14,7 @@ const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
 const SHERB_NOCONFIRMATION: u32 = 0x1;
 const SHERB_NOPROGRESSUI: u32 = 0x2;
 const SHERB_NOSOUND: u32 = 0x4;
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 const WINDOWS: &str = "Windows";
 const BROWSERS: &str = "Navegadores";
@@ -26,6 +29,9 @@ enum Target {
     /// Archivos concretos; los que no existen se ignoran.
     Files(Vec<PathBuf>),
     RecycleBin,
+    /// Limpieza oficial del almacén de componentes (WinSxS) con DISM. Su tamaño
+    /// no se conoce de antemano: se mide el espacio libre antes y después.
+    ComponentStore,
 }
 
 struct Category {
@@ -112,6 +118,8 @@ pub struct CategoryScan {
     warning: Option<&'static str>,
     /// Algún programa asociado está abierto.
     running: bool,
+    /// `false` si el tamaño solo se sabe al limpiar.
+    size_known: bool,
     bytes: u64,
     files: u64,
 }
@@ -237,6 +245,15 @@ fn categories() -> Vec<Category> {
         Category::new("windows_update", WINDOWS, "Descargas de Windows Update", "Instaladores de actualizaciones ya descargados.")
             .admin()
             .target(Target::Contents(windir.join(r"SoftwareDistribution\Download"))),
+        Category::new(
+            "windows_components",
+            WINDOWS,
+            "Componentes antiguos de Windows Update",
+            "Versiones antiguas de componentes que ya no se usan, con la limpieza oficial de Windows (DISM).",
+        )
+        .admin()
+        .opt_in("Tarda varios minutos. Se podrán seguir desinstalando las actualizaciones.")
+        .target(Target::ComponentStore),
         // Navegadores
         Category::new("chrome_cache", BROWSERS, "Google Chrome", CACHE_ONLY)
             .processes(&["chrome.exe"])
@@ -389,6 +406,23 @@ fn process(category: &Category, delete: bool) -> Stats {
                     }
                 }
             }
+            Target::ComponentStore => {
+                if !delete {
+                    continue;
+                }
+                let before = sysinfo::system_drive_free();
+                let ok = Command::new("Dism.exe")
+                    .args(["/Online", "/Cleanup-Image", "/StartComponentCleanup"])
+                    .creation_flags(CREATE_NO_WINDOW)
+                    .status()
+                    .is_ok_and(|s| s.success());
+                if ok {
+                    let after = sysinfo::system_drive_free();
+                    stats.bytes += after.zip(before).map_or(0, |(a, b)| a.saturating_sub(b));
+                } else {
+                    stats.failed += 1;
+                }
+            }
             Target::RecycleBin => {
                 let (bytes, items) = recycle_bin_info();
                 if delete && items > 0 {
@@ -424,6 +458,7 @@ pub fn scan() -> Vec<CategoryScan> {
                 default_selected: c.default_selected,
                 warning: c.warning,
                 running: c.processes.iter().any(|p| running.contains(*p)),
+                size_known: !c.targets.iter().any(|t| matches!(t, Target::ComponentStore)),
                 bytes: stats.bytes,
                 files: stats.files,
             }
@@ -460,12 +495,28 @@ mod tests {
     }
 
     #[test]
-    fn solo_privacidad_desmarcada_y_con_aviso() {
+    fn solo_privacidad_y_componentes_desmarcadas_y_con_aviso() {
         for c in categories() {
-            let privacy = c.group == PRIVACY;
-            assert_eq!(c.default_selected, !privacy, "{}", c.id);
-            assert_eq!(c.warning.is_some(), privacy, "{}", c.id);
+            let opt_in = c.group == PRIVACY || c.id == "windows_components";
+            assert_eq!(c.default_selected, !opt_in, "{}", c.id);
+            assert_eq!(c.warning.is_some(), opt_in, "{}", c.id);
         }
+    }
+
+    #[test]
+    fn componentes_de_windows() {
+        let cats = categories();
+        let unknown: Vec<&str> = cats
+            .iter()
+            .filter(|c| c.targets.iter().any(|t| matches!(t, Target::ComponentStore)))
+            .map(|c| c.id)
+            .collect();
+        assert_eq!(unknown, vec!["windows_components"]);
+        let c = cats.iter().find(|c| c.id == "windows_components").unwrap();
+        assert!(c.admin && !c.default_selected);
+        // Analizar no ejecuta DISM ni suma nada.
+        let stats = process(c, false);
+        assert_eq!((stats.bytes, stats.files, stats.failed), (0, 0, 0));
     }
 
     #[test]

@@ -844,3 +844,7 @@ button.disk-row {
   background: var(--warn-bg);
   color: var(--warn);
 }
+
+.group-note {
+  margin: -2px 16px 6px;
+}

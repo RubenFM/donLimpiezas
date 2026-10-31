@@ -15,5 +15,13 @@
 | 10 | Driver Updater | `add-driver-updater` | Implementado, pendiente de probar en la app y archivar |
 | 11 | History | `add-activity-history` | Implementado, pendiente de probar en la app y archivar |
 | 12 | Disk Analyzer | `add-disk-analyzer` | Implementado, pendiente de probar en la app y archivar |
+| 13 | Startup Manager: tareas y servicios | `extend-startup-manager` | Implementado, pendiente de probar en la app y archivar |
+| 14 | Custom Clean: componentes de Windows | `add-component-store-cleanup` | Implementado, pendiente de probar en la app y archivar |
 
 Flujo por cambio: revisar el borrador → `/opsx:propose` para completar specs, design y tasks → `/opsx:apply` → `/opsx:archive`.
+
+## Ideas pendientes
+
+- Limpieza programada (Programador de tareas): necesita un ejecutable instalado; se retoma cuando haya despliegue.
+- Ajustes de la app: exclusiones en Custom Clean, umbrales de Health Check, idioma.
+- Versión en inglés de los textos.

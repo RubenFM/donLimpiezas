@@ -28,11 +28,11 @@ El sistema SHALL determinar si una entrada está activada o desactivada leyendo 
 
 #### Scenario: Desactivada desde el Administrador de tareas
 - **WHEN** el usuario ha desactivado "Teams" en el Administrador de tareas
-- **THEN** Limpio muestra "Teams" como desactivada
+- **THEN** Don Limpiezas muestra "Teams" como desactivada
 
 ### Requirement: Activar y desactivar de forma reversible
 
-El sistema SHALL permitir activar y desactivar cada entrada sin borrar ni modificar la entrada original, de modo que el cambio se pueda deshacer desde Limpio o desde el Administrador de tareas.
+El sistema SHALL permitir activar y desactivar cada entrada sin borrar ni modificar la entrada original, de modo que el cambio se pueda deshacer desde Don Limpiezas o desde el Administrador de tareas.
 
 #### Scenario: Desactivar una entrada
 - **WHEN** el usuario desactiva "Spotify"
@@ -66,7 +66,7 @@ El sistema MUST rechazar cambios sobre entradas que no estén en el listado actu
 
 ### Requirement: Registro de cambios de inicio
 
-El sistema SHALL añadir una línea a `%LOCALAPPDATA%\Limpio\startup.log` por cada cambio con fecha ISO 8601, origen, nombre y nuevo estado.
+El sistema SHALL añadir una línea a `%LOCALAPPDATA%\DonLimpiezas\startup.log` por cada cambio con fecha ISO 8601, origen, nombre y nuevo estado.
 
 #### Scenario: Registro tras desactivar
 - **WHEN** se desactiva "Spotify"

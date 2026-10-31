@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    limpio_lib::run()
+    don_limpiezas_lib::run()
 }

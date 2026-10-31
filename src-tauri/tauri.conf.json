@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Limpio",
+  "productName": "Don Limpiezas",
   "version": "0.1.0",
-  "identifier": "com.ruben.limpio",
+  "identifier": "com.ruben.donlimpiezas",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Limpio",
+        "title": "Don Limpiezas",
         "width": 1000,
         "height": 700,
         "minWidth": 780,

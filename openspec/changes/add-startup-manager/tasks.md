@@ -3,7 +3,7 @@
 ## 1. Dependencias y utilidades
 
 - [ ] 1.1 Añadir `winreg` y `chrono` (solo feature `clock`) a `src-tauri/Cargo.toml` y verificar que `cargo build` sigue compilando sin warnings
-- [ ] 1.2 Crear `src-tauri/src/log.rs` con `append(file, line)` que escribe en `%LOCALAPPDATA%\Limpio\<file>` con fecha ISO 8601, y verificar con un test unitario que crea la carpeta y añade líneas sin sobrescribir
+- [ ] 1.2 Crear `src-tauri/src/log.rs` con `append(file, line)` que escribe en `%LOCALAPPDATA%\DonLimpiezas\<file>` con fecha ISO 8601, y verificar con un test unitario que crea la carpeta y añade líneas sin sobrescribir
 
 ## 2. Lógica de `StartupApproved` y parseo
 
@@ -25,7 +25,7 @@
 
 ## 5. Integración y documentación
 
-- [ ] 5.1 Desactivar una entrada de usuario desde Limpio y comprobar que el Administrador de tareas la muestra deshabilitada; reactivarla desde el Administrador de tareas y comprobar que Limpio lo refleja tras "Actualizar"
+- [ ] 5.1 Desactivar una entrada de usuario desde Don Limpiezas y comprobar que el Administrador de tareas la muestra deshabilitada; reactivarla desde el Administrador de tareas y comprobar que Don Limpiezas lo refleja tras "Actualizar"
 - [ ] 5.2 Actualizar la sección "Funciones" y "Estructura" del `README.md` con el gestor de inicio y verificar que describe los orígenes cubiertos
 
 ## Workflow follow-up

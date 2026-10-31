@@ -9,7 +9,7 @@ Windows (8 y posteriores) guarda el estado activado/desactivado de los programas
 ## Goals / Non-Goals
 
 **Goals:**
-- Reutilizar el mecanismo de `StartupApproved` para que Limpio y el Administrador de tareas muestren siempre lo mismo.
+- Reutilizar el mecanismo de `StartupApproved` para que Don Limpiezas y el Administrador de tareas muestren siempre lo mismo.
 - Un único módulo backend sin dependencias de PowerShell para lo crítico (leer y escribir el registro).
 
 **Non-Goals:**

@@ -1,4 +1,4 @@
-# Limpio
+# Don Limpiezas
 
 Limpiador de sistema y eliminador de bloatware para Windows 10/11, hecho con Tauri 2 (Rust + TypeScript).
 
@@ -16,7 +16,7 @@ Limpiador de sistema y eliminador de bloatware para Windows 10/11, hecho con Tau
 - Detecta el bloatware de un catálogo revisado (Noticias, El Tiempo, Candy Crush, Clipchamp, Xbox…)
 - Lo quita para tu usuario o para todos los usuarios y la imagen de Windows (requiere administrador)
 - Crea un punto de restauración antes de quitar nada
-- Guarda un registro en `%LOCALAPPDATA%\Limpio\debloat.log`
+- Guarda un registro en `%LOCALAPPDATA%\DonLimpiezas\debloat.log`
 
 Nunca se tocan Microsoft Store, los runtimes (VCLibs, .NET, UI.Xaml), el shell ni Seguridad de Windows.
 

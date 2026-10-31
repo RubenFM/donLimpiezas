@@ -68,7 +68,7 @@ El sistema SHALL pedir confirmación listando las apps y el ámbito, y SHALL inf
 
 ### Requirement: Registro de cambios
 
-El sistema SHALL añadir una línea por app procesada a `%LOCALAPPDATA%\Limpio\debloat.log` con fecha ISO 8601, nombre del paquete y `OK` o el mensaje de error.
+El sistema SHALL añadir una línea por app procesada a `%LOCALAPPDATA%\DonLimpiezas\debloat.log` con fecha ISO 8601, nombre del paquete y `OK` o el mensaje de error.
 
 #### Scenario: Registro tras eliminar
 - **WHEN** se quita `Microsoft.BingNews` correctamente

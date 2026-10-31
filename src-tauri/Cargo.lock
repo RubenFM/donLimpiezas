@@ -659,6 +659,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "don-limpiezas"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
 name = "dpi"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1702,18 +1714,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61ff90caf6077a803a240f62fdbe88645a890bbca49ef8174c3cb0404362171d"
 dependencies = [
  "libc",
-]
-
-[[package]]
-name = "limpio"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "windows-sys 0.59.0",
 ]
 
 [[package]]

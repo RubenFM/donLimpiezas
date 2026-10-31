@@ -1,11 +1,11 @@
 [package]
-name = "limpio"
+name = "don-limpiezas"
 version = "0.1.0"
 description = "Limpiador de sistema y eliminador de bloatware para Windows"
 edition = "2021"
 
 [lib]
-name = "limpio_lib"
+name = "don_limpiezas_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

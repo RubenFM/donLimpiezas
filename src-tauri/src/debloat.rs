@@ -117,7 +117,7 @@ pub fn list(include_provisioned: bool) -> Result<Vec<BloatApp>, String> {
 /// defecto, en cuyo caso se devuelve el aviso en lugar de un error.
 pub fn create_restore_point() -> Result<String, String> {
     let out = ps::run(
-        "Checkpoint-Computer -Description 'Limpio: antes de quitar apps' -RestorePointType MODIFY_SETTINGS \
+        "Checkpoint-Computer -Description 'Don Limpiezas: antes de quitar apps' -RestorePointType MODIFY_SETTINGS \
          -ErrorAction Stop -WarningAction SilentlyContinue -WarningVariable w\n\
          if ($w) { 'AVISO: ' + $w[0] } else { 'Punto de restauración creado.' }",
     )
@@ -147,7 +147,7 @@ pub fn remove(ids: &[String], all_users: bool) -> Result<Vec<RemoveResult>, Stri
         r#"$ErrorActionPreference = 'Stop'
 $names = @({names})
 $allUsers = ${all_users}
-$log = Join-Path $env:LOCALAPPDATA 'Limpio\debloat.log'
+$log = Join-Path $env:LOCALAPPDATA 'DonLimpiezas\debloat.log'
 New-Item -ItemType Directory -Force -Path (Split-Path $log) | Out-Null
 $results = foreach ($n in $names) {{
     try {{

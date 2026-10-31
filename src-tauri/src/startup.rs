@@ -3,7 +3,7 @@
 //! El estado se guarda en las claves `StartupApproved`, igual que hace el
 //! Administrador de tareas: nunca se borran ni se modifican las entradas originales.
 
-use crate::{log, ps};
+use crate::{cmdline, log, ps};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::collections::HashMap;
@@ -151,45 +151,8 @@ fn approval_bytes(enabled: bool, now: SystemTime) -> [u8; 12] {
     bytes
 }
 
-/// Expande `%VARIABLE%` con `env`; las variables desconocidas se dejan tal cual.
-fn expand_env(s: &str, env: impl Fn(&str) -> Option<String>) -> String {
-    let mut out = String::new();
-    let mut rest = s;
-    while let Some(start) = rest.find('%') {
-        out.push_str(&rest[..start]);
-        let after = &rest[start + 1..];
-        let Some(end) = after.find('%') else {
-            out.push_str(&rest[start..]);
-            return out;
-        };
-        let name = &after[..end];
-        match env(name).filter(|_| !name.is_empty()) {
-            Some(value) => out.push_str(&value),
-            None => out.push_str(&rest[start..start + end + 2]),
-        }
-        rest = &after[end + 1..];
-    }
-    out.push_str(rest);
-    out
-}
-
-/// Ruta del ejecutable de un comando de `Run`: el primer token entre comillas o,
-/// sin comillas, todo hasta el primer `.exe` (las rutas pueden tener espacios).
-fn extract_exe(command: &str, env: impl Fn(&str) -> Option<String>) -> Option<String> {
-    let command = command.trim();
-    let path = match command.strip_prefix('"') {
-        Some(rest) => rest.split('"').next()?,
-        None => match command.to_ascii_lowercase().find(".exe") {
-            Some(i) => &command[..i + 4],
-            None => command.split_whitespace().next()?,
-        },
-    };
-    let path = expand_env(path, env);
-    (!path.is_empty()).then_some(path)
-}
-
-fn system_env(name: &str) -> Option<String> {
-    std::env::var(name).ok()
+fn exe_of(command: &str) -> Option<String> {
+    cmdline::split(command, cmdline::system_env).map(|(exe, _)| exe)
 }
 
 #[derive(Deserialize, Default)]
@@ -257,7 +220,7 @@ pub fn list() -> Vec<StartupEntry> {
     let exes: Vec<String> = entries
         .iter()
         .filter(|e| !is_link(e))
-        .filter_map(|e| extract_exe(&e.command, system_env))
+        .filter_map(|e| exe_of(&e.command))
         .collect();
     let details = resolve_details(&links, &exes);
 
@@ -266,7 +229,7 @@ pub fn list() -> Vec<StartupEntry> {
             entry.target = details.targets.get(&entry.command).cloned();
             entry.target.clone()
         } else {
-            extract_exe(&entry.command, system_env)
+            exe_of(&entry.command)
         };
         entry.publisher = exe.and_then(|p| details.companies.get(&p).cloned());
     }
@@ -314,13 +277,6 @@ mod tests {
     use super::*;
     use std::time::Duration;
 
-    fn env(name: &str) -> Option<String> {
-        match name {
-            "ProgramFiles" => Some(r"C:\Program Files".into()),
-            _ => None,
-        }
-    }
-
     fn raw(name: &str) -> RawEntry {
         RawEntry { name: name.into(), command: String::new() }
     }
@@ -348,33 +304,6 @@ mod tests {
         assert_eq!(bytes[..4], [3, 0, 0, 0]);
         assert_eq!(u64::from_le_bytes(bytes[4..].try_into().unwrap()), 132_223_104_000_000_000);
         assert!(!is_enabled(Some(&bytes)));
-    }
-
-    #[test]
-    fn ejecutable_entre_comillas() {
-        assert_eq!(
-            extract_exe(r#""C:\Program Files\X\x.exe" --min"#, env).as_deref(),
-            Some(r"C:\Program Files\X\x.exe")
-        );
-    }
-
-    #[test]
-    fn ejecutable_sin_comillas() {
-        assert_eq!(extract_exe(r"C:\Tools\y.exe /s", env).as_deref(), Some(r"C:\Tools\y.exe"));
-        assert_eq!(
-            extract_exe(r"C:\Program Files\Y\Y.EXE -silent", env).as_deref(),
-            Some(r"C:\Program Files\Y\Y.EXE")
-        );
-    }
-
-    #[test]
-    fn ejecutable_con_variables() {
-        assert_eq!(
-            extract_exe(r"%ProgramFiles%\Z\z.exe", env).as_deref(),
-            Some(r"C:\Program Files\Z\z.exe")
-        );
-        assert_eq!(expand_env(r"%Desconocida%\a.exe", env), r"%Desconocida%\a.exe");
-        assert_eq!(expand_env("100% seguro", env), "100% seguro");
     }
 
     #[test]

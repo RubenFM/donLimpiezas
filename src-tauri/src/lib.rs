@@ -1,9 +1,11 @@
 mod cleaner;
+mod cmdline;
 mod debloat;
 mod log;
 mod ps;
 mod startup;
 mod system;
+mod uninstaller;
 
 /// Ejecuta trabajo pesado (disco, PowerShell) fuera del hilo de la interfaz.
 async fn blocking<T, F>(f: F) -> Result<T, String>
@@ -36,6 +38,17 @@ async fn scan_cleanup() -> Result<Vec<cleaner::CategoryScan>, String> {
 #[tauri::command]
 async fn run_cleanup(ids: Vec<String>) -> Result<Vec<cleaner::CleanResult>, String> {
     blocking(move || Ok(cleaner::clean(&ids))).await
+}
+
+#[tauri::command]
+async fn list_programs() -> Result<Vec<uninstaller::Program>, String> {
+    blocking(|| Ok(uninstaller::list())).await
+}
+
+/// Espera a que termine el desinstalador, que puede tardar lo que el usuario quiera.
+#[tauri::command]
+async fn uninstall_program(id: String) -> Result<uninstaller::UninstallResult, String> {
+    blocking(move || uninstaller::uninstall(&id)).await
 }
 
 #[tauri::command]
@@ -81,6 +94,8 @@ pub fn run() {
             relaunch_as_admin,
             scan_cleanup,
             run_cleanup,
+            list_programs,
+            uninstall_program,
             list_bloat,
             create_restore_point,
             remove_bloat,

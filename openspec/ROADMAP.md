@@ -4,9 +4,9 @@
 |---|--------|--------|--------|
 | 1 | Navegación lateral | `add-sidebar-navigation` | Hecho: `specs/app-navigation` |
 | 2 | Startup Manager | `add-startup-manager` | Hecho: `specs/startup-programs` |
-| 3 | Limpieza | `extend-custom-clean` | Borrador (base implementada: `specs/system-cleanup`) |
+| 3 | Custom Clean | `extend-custom-clean` | Implementado, pendiente de probar en la app y archivar |
 | — | Apps preinstaladas | — | Implementado: `specs/bloatware-removal` |
-| 4 | Desinstalador | `add-uninstaller` | Borrador |
+| 4 | Uninstaller | `add-uninstaller` | Implementado, pendiente de probar en la app y archivar |
 | 5 | Rendimiento | `add-performance-optimizer` | Borrador |
 | 6 | Duplicados | `add-duplicate-finder` | Borrador |
 | 7 | Actualizar software | `add-software-updater` | Borrador |

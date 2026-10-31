@@ -12,6 +12,8 @@
   --err-bg: #fbeceb;
   --info-bg: #eaf1fb;
   --sidebar: #eceff3;
+  --warn: #9a6200;
+  --warn-bg: #fdf1dc;
   color-scheme: light dark;
   font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
   font-size: 14px;
@@ -32,6 +34,8 @@
     --err-bg: #3a1f1d;
     --info-bg: #1c2a3d;
     --sidebar: #11151a;
+    --warn: #e8b45a;
+    --warn-bg: #3a2c14;
   }
 }
 
@@ -259,6 +263,26 @@ main {
   font-weight: 600;
 }
 
+.input {
+  font: inherit;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.input[type="search"] {
+  flex: 1;
+  min-width: 180px;
+  max-width: 320px;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
 .btn.small {
   padding: 4px 10px;
   font-size: 13px;
@@ -413,6 +437,17 @@ main {
   border-radius: 999px;
   background: var(--pill);
   color: var(--muted);
+}
+
+.pill.warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+.row-warning {
+  color: var(--warn);
+  font-size: 12px;
+  margin-top: 2px;
 }
 
 .pill.ok {

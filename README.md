@@ -7,10 +7,22 @@ Limpiador de sistema y eliminador de bloatware para Windows 10/11, hecho con Tau
 **Custom Clean**
 - Temporales del usuario y de Windows (solo archivos con más de 24 h)
 - Papelera de reciclaje
-- Caché de miniaturas y de sombreadores DirectX
+- Caché de miniaturas, iconos y sombreadores DirectX; Prefetch y logs de CBS/DISM
 - Volcados e informes de errores (usuario y sistema)
 - Descargas de Windows Update
 - Caché de Chrome, Edge, Brave y Firefox (no toca historial, contraseñas ni sesiones)
+- Caché de Discord, Spotify, Visual Studio Code y Steam
+- Privacidad, desmarcada por defecto: historial y cookies de Chrome, Edge y Brave, cookies de
+  Firefox y documentos recientes (nunca contraseñas ni marcadores)
+- Avisa si un programa está abierto y conviene cerrarlo antes de limpiar
+
+**Uninstaller**
+- Lista los programas instalados (64 y 32 bits, equipo y usuario) con editor, versión, tamaño y fecha,
+  sin componentes del sistema ni actualizaciones
+- Búsqueda y orden por nombre, tamaño o fecha
+- Desinstala varios seguidos con el desinstalador oficial de cada uno (con su asistente, nunca en
+  silencio) y comprueba si se desinstalaron
+- Guarda un registro en `%LOCALAPPDATA%\DonLimpiezas\uninstall.log`
 
 **Bloatware Remover**
 - Detecta el bloatware de un catálogo revisado (Noticias, El Tiempo, Candy Crush, Clipchamp, Xbox…)
@@ -61,6 +73,7 @@ src/
     module.ts         Contrato de módulo e icon()
     index.ts          Lista ordenada de módulos de la barra lateral
     custom-clean.ts   Custom Clean
+    uninstaller.ts    Uninstaller
     bloatware-remover.ts  Bloatware Remover
     startup-manager.ts    Startup Manager
 src-tauri/src/
@@ -68,9 +81,11 @@ src-tauri/src/
   cleaner.rs          Categorías de limpieza, análisis y borrado
   debloat.rs          Catálogo de bloatware y desinstalación vía PowerShell
   startup.rs          Programas de inicio y su estado en StartupApproved
+  uninstaller.rs      Programas instalados y desinstalación con su desinstalador
+  cmdline.rs          Interpretación de líneas de comandos registradas
   log.rs              Registro de cambios en %LOCALAPPDATA%\DonLimpiezas
   ps.rs               Ejecución de PowerShell sin ventana
-  system.rs           Detección y elevación de administrador
+  system.rs           Administrador, elevación y procesos en ejecución
 ```
 
 Para añadir un módulo, crea `src/modules/<id>.ts` exportando un `Module` (id, nombre en inglés,

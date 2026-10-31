@@ -1,5 +1,6 @@
 //! Análisis y limpieza de archivos temporales, cachés y restos del sistema.
 
+use crate::system;
 use serde::Serialize;
 use std::fs::{self, Metadata};
 use std::os::windows::fs::MetadataExt;
@@ -12,11 +13,18 @@ const SHERB_NOCONFIRMATION: u32 = 0x1;
 const SHERB_NOPROGRESSUI: u32 = 0x2;
 const SHERB_NOSOUND: u32 = 0x4;
 
+const WINDOWS: &str = "Windows";
+const BROWSERS: &str = "Navegadores";
+const APPS: &str = "Aplicaciones";
+const PRIVACY: &str = "Privacidad";
+
 enum Target {
     /// Todo lo que hay dentro de la carpeta (la carpeta en sí se conserva).
     Contents(PathBuf),
     /// Archivos de la carpeta cuyo nombre empieza por el prefijo indicado.
     FilesWithPrefix(PathBuf, &'static str),
+    /// Archivos concretos; los que no existen se ignoran.
+    Files(Vec<PathBuf>),
     RecycleBin,
 }
 
@@ -29,7 +37,67 @@ struct Category {
     /// Solo se tocan archivos más antiguos que esto, para no romper
     /// instalaciones o programas que estén usando sus temporales ahora mismo.
     min_age_hours: u64,
+    /// Si la interfaz la marca al analizar (cuando tiene algo que limpiar).
+    default_selected: bool,
+    /// Consecuencia que el usuario debe conocer antes de limpiarla.
+    warning: Option<&'static str>,
+    /// Ejecutables (en minúsculas) que conviene cerrar antes de limpiarla.
+    processes: &'static [&'static str],
     targets: Vec<Target>,
+}
+
+impl Category {
+    fn new(id: &'static str, group: &'static str, name: &'static str, description: &'static str) -> Self {
+        Category {
+            id,
+            name,
+            description,
+            group,
+            admin: false,
+            min_age_hours: 0,
+            default_selected: true,
+            warning: None,
+            processes: &[],
+            targets: Vec::new(),
+        }
+    }
+
+    fn admin(mut self) -> Self {
+        self.admin = true;
+        self
+    }
+
+    fn min_age_hours(mut self, hours: u64) -> Self {
+        self.min_age_hours = hours;
+        self
+    }
+
+    /// Desmarcada por defecto y con aviso.
+    fn opt_in(mut self, warning: &'static str) -> Self {
+        self.default_selected = false;
+        self.warning = Some(warning);
+        self
+    }
+
+    fn processes(mut self, processes: &'static [&'static str]) -> Self {
+        self.processes = processes;
+        self
+    }
+
+    fn target(mut self, target: Target) -> Self {
+        self.targets.push(target);
+        self
+    }
+
+    fn targets(mut self, targets: impl IntoIterator<Item = Target>) -> Self {
+        self.targets.extend(targets);
+        self
+    }
+
+    /// Contenido de varias subcarpetas de `base`.
+    fn dirs(self, base: &Path, subdirs: &[&str]) -> Self {
+        self.targets(subdirs.iter().map(|s| Target::Contents(base.join(s))))
+    }
 }
 
 #[derive(Serialize)]
@@ -40,6 +108,10 @@ pub struct CategoryScan {
     description: &'static str,
     group: &'static str,
     admin: bool,
+    default_selected: bool,
+    warning: Option<&'static str>,
+    /// Algún programa asociado está abierto.
+    running: bool,
     bytes: u64,
     files: u64,
 }
@@ -66,165 +138,151 @@ fn env_dir(var: &str, fallback: &str) -> PathBuf {
         .unwrap_or_else(|| PathBuf::from(fallback))
 }
 
-/// Carpetas de caché de cada perfil de un navegador basado en Chromium.
-fn chromium_caches(user_data: PathBuf) -> Vec<Target> {
-    let mut targets = Vec::new();
-    let Ok(profiles) = fs::read_dir(&user_data) else {
-        return targets;
-    };
-    for profile in profiles.flatten() {
-        let path = profile.path();
-        if !path.is_dir() {
-            continue;
-        }
-        for sub in ["Cache", "Code Cache", "GPUCache"] {
-            let dir = path.join(sub);
-            if dir.is_dir() {
-                targets.push(Target::Contents(dir));
-            }
-        }
-    }
-    targets
-}
-
-fn firefox_caches(profiles_dir: PathBuf) -> Vec<Target> {
-    let Ok(profiles) = fs::read_dir(profiles_dir) else {
+fn subdirs(dir: &Path) -> Vec<PathBuf> {
+    let Ok(entries) = fs::read_dir(dir) else {
         return Vec::new();
     };
-    profiles
-        .flatten()
-        .map(|p| p.path().join("cache2"))
+    entries.flatten().map(|e| e.path()).filter(|p| p.is_dir()).collect()
+}
+
+/// Carpetas de caché de cada perfil de un navegador basado en Chromium.
+fn chromium_caches(user_data: &Path) -> Vec<Target> {
+    subdirs(user_data)
+        .iter()
+        .flat_map(|profile| ["Cache", "Code Cache", "GPUCache"].map(|s| profile.join(s)))
+        .filter(|dir| dir.is_dir())
+        .map(Target::Contents)
+        .collect()
+}
+
+/// Historial y cookies de cada perfil de un navegador basado en Chromium.
+/// No incluye `Login Data` (contraseñas) ni `Bookmarks`.
+fn chromium_privacy(user_data: &Path) -> Vec<Target> {
+    let files = subdirs(user_data)
+        .iter()
+        .flat_map(|profile| {
+            ["History", "History-journal", r"Network\Cookies", r"Network\Cookies-journal"]
+                .map(|f| profile.join(f))
+        })
+        .collect();
+    vec![Target::Files(files)]
+}
+
+fn firefox_caches(profiles: &Path) -> Vec<Target> {
+    subdirs(profiles)
+        .iter()
+        .map(|p| p.join("cache2"))
         .filter(|p| p.is_dir())
         .map(Target::Contents)
         .collect()
 }
 
+/// Solo cookies: el historial de Firefox está en `places.sqlite` junto a los marcadores.
+fn firefox_cookies(profiles: &Path) -> Vec<Target> {
+    let files = subdirs(profiles)
+        .iter()
+        .flat_map(|p| ["cookies.sqlite", "cookies.sqlite-wal"].map(|f| p.join(f)))
+        .collect();
+    vec![Target::Files(files)]
+}
+
 fn categories() -> Vec<Category> {
     let local = env_dir("LOCALAPPDATA", r"C:\Users\Default\AppData\Local");
+    let roaming = env_dir("APPDATA", r"C:\Users\Default\AppData\Roaming");
     let temp = env_dir("TEMP", &local.join("Temp").to_string_lossy());
     let windir = env_dir("SystemRoot", r"C:\Windows");
     let program_data = env_dir("ProgramData", r"C:\ProgramData");
+    let explorer = local.join(r"Microsoft\Windows\Explorer");
+    let chrome = local.join(r"Google\Chrome\User Data");
+    let edge = local.join(r"Microsoft\Edge\User Data");
+    let brave = local.join(r"BraveSoftware\Brave-Browser\User Data");
+    let firefox = roaming.join(r"Mozilla\Firefox\Profiles");
+    let firefox_local = local.join(r"Mozilla\Firefox\Profiles");
+
+    const CACHE_ONLY: &str = "Caché de todos los perfiles. No borra historial, contraseñas ni sesiones.";
+    const HISTORY_COOKIES: &str = "Historial de navegación y cookies de todos los perfiles. No borra contraseñas ni marcadores.";
+    const LOGS_OUT: &str = "Cerrará tu sesión en las webs.";
 
     vec![
-        Category {
-            id: "user_temp",
-            name: "Archivos temporales del usuario",
-            description: "Contenido de %TEMP% con más de 24 horas.",
-            group: "Windows",
-            admin: false,
-            min_age_hours: 24,
-            targets: vec![Target::Contents(temp)],
-        },
-        Category {
-            id: "windows_temp",
-            name: "Archivos temporales de Windows",
-            description: r"Contenido de C:\Windows\Temp con más de 24 horas.",
-            group: "Windows",
-            admin: true,
-            min_age_hours: 24,
-            targets: vec![Target::Contents(windir.join("Temp"))],
-        },
-        Category {
-            id: "recycle_bin",
-            name: "Papelera de reciclaje",
-            description: "Vacía la papelera de todas las unidades.",
-            group: "Windows",
-            admin: false,
-            min_age_hours: 0,
-            targets: vec![Target::RecycleBin],
-        },
-        Category {
-            id: "thumbnails",
-            name: "Caché de miniaturas",
-            description: "El Explorador las regenera cuando las necesita.",
-            group: "Windows",
-            admin: false,
-            min_age_hours: 0,
-            targets: vec![Target::FilesWithPrefix(
-                local.join(r"Microsoft\Windows\Explorer"),
-                "thumbcache_",
-            )],
-        },
-        Category {
-            id: "shader_cache",
-            name: "Caché de sombreadores DirectX",
-            description: "Se regenera al abrir juegos y aplicaciones 3D.",
-            group: "Windows",
-            admin: false,
-            min_age_hours: 0,
-            targets: vec![Target::Contents(local.join("D3DSCache"))],
-        },
-        Category {
-            id: "crash_dumps",
-            name: "Volcados de errores del usuario",
-            description: "Informes de errores y volcados de memoria de aplicaciones.",
-            group: "Windows",
-            admin: false,
-            min_age_hours: 0,
-            targets: vec![
-                Target::Contents(local.join("CrashDumps")),
-                Target::Contents(local.join(r"Microsoft\Windows\WER\ReportArchive")),
-                Target::Contents(local.join(r"Microsoft\Windows\WER\ReportQueue")),
-            ],
-        },
-        Category {
-            id: "system_crash_dumps",
-            name: "Volcados de errores del sistema",
-            description: "Minidumps de pantallazos azules e informes de errores del sistema.",
-            group: "Windows",
-            admin: true,
-            min_age_hours: 0,
-            targets: vec![
-                Target::Contents(windir.join("Minidump")),
-                Target::Contents(program_data.join(r"Microsoft\Windows\WER\ReportArchive")),
-                Target::Contents(program_data.join(r"Microsoft\Windows\WER\ReportQueue")),
-            ],
-        },
-        Category {
-            id: "windows_update",
-            name: "Descargas de Windows Update",
-            description: "Instaladores de actualizaciones ya descargados.",
-            group: "Windows",
-            admin: true,
-            min_age_hours: 0,
-            targets: vec![Target::Contents(windir.join(r"SoftwareDistribution\Download"))],
-        },
-        Category {
-            id: "chrome_cache",
-            name: "Google Chrome",
-            description: "Caché de todos los perfiles. No borra historial, contraseñas ni sesiones.",
-            group: "Navegadores",
-            admin: false,
-            min_age_hours: 0,
-            targets: chromium_caches(local.join(r"Google\Chrome\User Data")),
-        },
-        Category {
-            id: "edge_cache",
-            name: "Microsoft Edge",
-            description: "Caché de todos los perfiles. No borra historial, contraseñas ni sesiones.",
-            group: "Navegadores",
-            admin: false,
-            min_age_hours: 0,
-            targets: chromium_caches(local.join(r"Microsoft\Edge\User Data")),
-        },
-        Category {
-            id: "brave_cache",
-            name: "Brave",
-            description: "Caché de todos los perfiles. No borra historial, contraseñas ni sesiones.",
-            group: "Navegadores",
-            admin: false,
-            min_age_hours: 0,
-            targets: chromium_caches(local.join(r"BraveSoftware\Brave-Browser\User Data")),
-        },
-        Category {
-            id: "firefox_cache",
-            name: "Mozilla Firefox",
-            description: "Caché de todos los perfiles. No borra historial, contraseñas ni sesiones.",
-            group: "Navegadores",
-            admin: false,
-            min_age_hours: 0,
-            targets: firefox_caches(local.join(r"Mozilla\Firefox\Profiles")),
-        },
+        // Windows
+        Category::new("user_temp", WINDOWS, "Archivos temporales del usuario", "Contenido de %TEMP% con más de 24 horas.")
+            .min_age_hours(24)
+            .target(Target::Contents(temp)),
+        Category::new("windows_temp", WINDOWS, "Archivos temporales de Windows", r"Contenido de C:\Windows\Temp con más de 24 horas.")
+            .admin()
+            .min_age_hours(24)
+            .target(Target::Contents(windir.join("Temp"))),
+        Category::new("recycle_bin", WINDOWS, "Papelera de reciclaje", "Vacía la papelera de todas las unidades.")
+            .target(Target::RecycleBin),
+        Category::new("thumbnails", WINDOWS, "Caché de miniaturas", "El Explorador las regenera cuando las necesita.")
+            .target(Target::FilesWithPrefix(explorer.clone(), "thumbcache_")),
+        Category::new("icon_cache", WINDOWS, "Caché de iconos", "El Explorador la regenera; los iconos pueden tardar un momento en aparecer.")
+            .target(Target::FilesWithPrefix(explorer, "iconcache_")),
+        Category::new("shader_cache", WINDOWS, "Caché de sombreadores DirectX", "Se regenera al abrir juegos y aplicaciones 3D.")
+            .target(Target::Contents(local.join("D3DSCache"))),
+        Category::new("prefetch", WINDOWS, "Prefetch", "Windows la regenera; los programas pueden tardar algo más en abrirse la primera vez.")
+            .admin()
+            .target(Target::Contents(windir.join("Prefetch"))),
+        Category::new("windows_logs", WINDOWS, "Logs de mantenimiento de Windows", "Registros de CBS y DISM con más de 24 horas.")
+            .admin()
+            .min_age_hours(24)
+            .dirs(&windir.join("Logs"), &["CBS", "DISM"]),
+        Category::new("crash_dumps", WINDOWS, "Volcados de errores del usuario", "Informes de errores y volcados de memoria de aplicaciones.")
+            .target(Target::Contents(local.join("CrashDumps")))
+            .dirs(&local.join(r"Microsoft\Windows\WER"), &["ReportArchive", "ReportQueue"]),
+        Category::new("system_crash_dumps", WINDOWS, "Volcados de errores del sistema", "Minidumps de pantallazos azules e informes de errores del sistema.")
+            .admin()
+            .target(Target::Contents(windir.join("Minidump")))
+            .dirs(&program_data.join(r"Microsoft\Windows\WER"), &["ReportArchive", "ReportQueue"]),
+        Category::new("windows_update", WINDOWS, "Descargas de Windows Update", "Instaladores de actualizaciones ya descargados.")
+            .admin()
+            .target(Target::Contents(windir.join(r"SoftwareDistribution\Download"))),
+        // Navegadores
+        Category::new("chrome_cache", BROWSERS, "Google Chrome", CACHE_ONLY)
+            .processes(&["chrome.exe"])
+            .targets(chromium_caches(&chrome)),
+        Category::new("edge_cache", BROWSERS, "Microsoft Edge", CACHE_ONLY)
+            .processes(&["msedge.exe"])
+            .targets(chromium_caches(&edge)),
+        Category::new("brave_cache", BROWSERS, "Brave", CACHE_ONLY)
+            .processes(&["brave.exe"])
+            .targets(chromium_caches(&brave)),
+        Category::new("firefox_cache", BROWSERS, "Mozilla Firefox", CACHE_ONLY)
+            .processes(&["firefox.exe"])
+            .targets(firefox_caches(&firefox_local)),
+        // Aplicaciones
+        Category::new("discord_cache", APPS, "Discord", "Caché de imágenes y del navegador integrado.")
+            .processes(&["discord.exe"])
+            .dirs(&roaming.join("discord"), &["Cache", "Code Cache", "GPUCache"]),
+        Category::new("spotify_cache", APPS, "Spotify", "Canciones y datos en caché; se vuelven a descargar al reproducir.")
+            .processes(&["spotify.exe"])
+            .target(Target::Contents(local.join(r"Spotify\Storage"))),
+        Category::new("vscode_cache", APPS, "Visual Studio Code", "Caché del editor. No borra extensiones, ajustes ni proyectos.")
+            .processes(&["code.exe"])
+            .dirs(&roaming.join("Code"), &["Cache", "CachedData", "Code Cache", "GPUCache"]),
+        Category::new("steam_cache", APPS, "Steam", "Caché del navegador integrado de la tienda y la comunidad.")
+            .processes(&["steam.exe", "steamwebhelper.exe"])
+            .target(Target::Contents(local.join(r"Steam\htmlcache"))),
+        // Privacidad
+        Category::new("chrome_privacy", PRIVACY, "Historial y cookies de Chrome", HISTORY_COOKIES)
+            .opt_in(LOGS_OUT)
+            .processes(&["chrome.exe"])
+            .targets(chromium_privacy(&chrome)),
+        Category::new("edge_privacy", PRIVACY, "Historial y cookies de Edge", HISTORY_COOKIES)
+            .opt_in(LOGS_OUT)
+            .processes(&["msedge.exe"])
+            .targets(chromium_privacy(&edge)),
+        Category::new("brave_privacy", PRIVACY, "Historial y cookies de Brave", HISTORY_COOKIES)
+            .opt_in(LOGS_OUT)
+            .processes(&["brave.exe"])
+            .targets(chromium_privacy(&brave)),
+        Category::new("firefox_cookies", PRIVACY, "Cookies de Firefox", "Cookies de todos los perfiles. No borra historial, contraseñas ni marcadores.")
+            .opt_in(LOGS_OUT)
+            .processes(&["firefox.exe"])
+            .targets(firefox_cookies(&firefox)),
+        Category::new("recent_docs", PRIVACY, "Documentos recientes", "Lista de archivos abiertos recientemente y accesos rápidos de la barra de tareas.")
+            .opt_in("Vaciará las listas de recientes del Explorador y de la barra de tareas.")
+            .target(Target::Contents(roaming.join(r"Microsoft\Windows\Recent"))),
     ]
 }
 
@@ -322,6 +380,15 @@ fn process(category: &Category, delete: bool) -> Stats {
                     }
                 }
             }
+            Target::Files(files) => {
+                for path in files {
+                    if let Ok(meta) = fs::symlink_metadata(path) {
+                        if meta.is_file() {
+                            handle_file(path, &meta, cutoff, delete, &mut stats);
+                        }
+                    }
+                }
+            }
             Target::RecycleBin => {
                 let (bytes, items) = recycle_bin_info();
                 if delete && items > 0 {
@@ -343,6 +410,7 @@ fn process(category: &Category, delete: bool) -> Stats {
 }
 
 pub fn scan() -> Vec<CategoryScan> {
+    let running = system::running_processes();
     categories()
         .iter()
         .map(|c| {
@@ -353,6 +421,9 @@ pub fn scan() -> Vec<CategoryScan> {
                 description: c.description,
                 group: c.group,
                 admin: c.admin,
+                default_selected: c.default_selected,
+                warning: c.warning,
+                running: c.processes.iter().any(|p| running.contains(*p)),
                 bytes: stats.bytes,
                 files: stats.files,
             }
@@ -374,4 +445,61 @@ pub fn clean(ids: &[String]) -> Vec<CleanResult> {
             }
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    #[test]
+    fn ids_unicos() {
+        let cats = categories();
+        let ids: HashSet<_> = cats.iter().map(|c| c.id).collect();
+        assert_eq!(ids.len(), cats.len());
+    }
+
+    #[test]
+    fn solo_privacidad_desmarcada_y_con_aviso() {
+        for c in categories() {
+            let privacy = c.group == PRIVACY;
+            assert_eq!(c.default_selected, !privacy, "{}", c.id);
+            assert_eq!(c.warning.is_some(), privacy, "{}", c.id);
+        }
+    }
+
+    #[test]
+    fn privacidad_no_toca_contrasenas_ni_marcadores() {
+        for c in categories().iter().filter(|c| c.group == PRIVACY) {
+            for t in &c.targets {
+                if let Target::Files(files) = t {
+                    for f in files {
+                        let name = f.file_name().unwrap().to_string_lossy().to_lowercase();
+                        assert!(
+                            !["login data", "bookmarks", "places.sqlite", "logins.json", "key4.db"].contains(&name.as_str()),
+                            "{}: {name}",
+                            c.id
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /// Analiza el sistema real sin borrar nada: `cargo test -- --ignored --nocapture`.
+    #[test]
+    #[ignore]
+    fn analiza_el_sistema_real() {
+        for c in scan() {
+            println!(
+                "[{}] {} | {} MB | {} elementos | abierto={} | marcada={}",
+                c.group,
+                c.id,
+                c.bytes / 1_048_576,
+                c.files,
+                c.running,
+                c.default_selected
+            );
+        }
+    }
 }

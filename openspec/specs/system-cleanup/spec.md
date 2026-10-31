@@ -4,17 +4,20 @@
 
 Analizar y liberar espacio en disco borrando archivos temporales, cachés y restos del sistema que Windows y las aplicaciones regeneran solos, sin tocar datos del usuario.
 
-Implementado en `src-tauri/src/cleaner.rs` (comandos `scan_cleanup` y `run_cleanup`) y en la pestaña "Limpieza" de `src/main.ts`.
+Implementado en `src-tauri/src/cleaner.rs` (comandos `scan_cleanup` y `run_cleanup`) y en el módulo Custom Clean (`src/modules/custom-clean.ts`).
 
-Categorías actuales:
+Categorías actuales (las de Privacidad van desmarcadas por defecto):
 
 | id | Grupo | Admin | Origen |
 |----|-------|-------|--------|
-| `user_temp` | Windows | No | `%TEMP%` |
-| `windows_temp` | Windows | Sí | `%SystemRoot%\Temp` |
+| `user_temp` | Windows | No | `%TEMP%`, más de 24 h |
+| `windows_temp` | Windows | Sí | `%SystemRoot%\Temp`, más de 24 h |
 | `recycle_bin` | Windows | No | Papelera de todas las unidades |
 | `thumbnails` | Windows | No | `thumbcache_*` en `%LOCALAPPDATA%\Microsoft\Windows\Explorer` |
+| `icon_cache` | Windows | No | `iconcache_*` en la misma carpeta |
 | `shader_cache` | Windows | No | `%LOCALAPPDATA%\D3DSCache` |
+| `prefetch` | Windows | Sí | `%SystemRoot%\Prefetch` |
+| `windows_logs` | Windows | Sí | `%SystemRoot%\Logs\CBS` y `\DISM`, más de 24 h |
 | `crash_dumps` | Windows | No | `%LOCALAPPDATA%\CrashDumps` y WER del usuario |
 | `system_crash_dumps` | Windows | Sí | `%SystemRoot%\Minidump` y WER de `%ProgramData%` |
 | `windows_update` | Windows | Sí | `%SystemRoot%\SoftwareDistribution\Download` |
@@ -22,6 +25,15 @@ Categorías actuales:
 | `edge_cache` | Navegadores | No | Ídem para Edge |
 | `brave_cache` | Navegadores | No | Ídem para Brave |
 | `firefox_cache` | Navegadores | No | `cache2` de cada perfil |
+| `discord_cache` | Aplicaciones | No | `%APPDATA%\discord\{Cache,Code Cache,GPUCache}` |
+| `spotify_cache` | Aplicaciones | No | `%LOCALAPPDATA%\Spotify\Storage` |
+| `vscode_cache` | Aplicaciones | No | `%APPDATA%\Code\{Cache,CachedData,Code Cache,GPUCache}` |
+| `steam_cache` | Aplicaciones | No | `%LOCALAPPDATA%\Steam\htmlcache` |
+| `chrome_privacy` | Privacidad | No | `History` y `Network\Cookies` de cada perfil |
+| `edge_privacy` | Privacidad | No | Ídem para Edge |
+| `brave_privacy` | Privacidad | No | Ídem para Brave |
+| `firefox_cookies` | Privacidad | No | `cookies.sqlite` de cada perfil |
+| `recent_docs` | Privacidad | No | `%APPDATA%\Microsoft\Windows\Recent` |
 
 ## Requirements
 

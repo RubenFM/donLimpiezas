@@ -9,6 +9,9 @@ type CategoryScan = {
   description: string;
   group: string;
   admin: boolean;
+  defaultSelected: boolean;
+  warning: string | null;
+  running: boolean;
   bytes: number;
   files: number;
 };
@@ -57,14 +60,20 @@ function render(root: HTMLElement) {
         const rows = items
           .map((c) => {
             const locked = c.admin && !app.isAdmin;
-            const checked = !locked && c.bytes > 0;
+            const checked = !locked && c.defaultSelected && c.bytes > 0;
+            const notes = [
+              c.warning,
+              c.running ? "Ciérralo antes para limpiarlo por completo; los archivos en uso se omitirán." : null,
+            ].filter((n): n is string => n !== null);
             return `
               <label class="row ${locked ? "locked" : ""}">
                 <input type="checkbox" value="${c.id}" ${checked ? "checked" : ""} ${locked ? "disabled" : ""} />
                 <div class="row-main">
                   <div class="row-title">${escapeHtml(c.name)}
-                    ${c.admin ? '<span class="pill">Admin</span>' : ""}</div>
+                    ${c.admin ? '<span class="pill">Admin</span>' : ""}
+                    ${c.running ? '<span class="pill warn">Abierto</span>' : ""}</div>
                   <div class="row-desc">${escapeHtml(c.description)}</div>
+                  ${notes.map((n) => `<div class="row-warning">${escapeHtml(n)}</div>`).join("")}
                 </div>
                 <div class="row-size">
                   <strong>${formatBytes(c.bytes)}</strong>

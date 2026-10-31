@@ -22,6 +22,7 @@ Ver `proposal.md`. Hoy todo el frontend está en `src/main.ts` (~330 líneas) co
 interface Module {
   id: string;            // "custom-clean", estable: se guarda en localStorage
   label: string;         // "Custom Clean"
+  description: string;   // subtítulo en español, en la cabecera del módulo
   icon: string;          // SVG en línea
   render(root: HTMLElement): void;
 }

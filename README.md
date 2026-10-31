@@ -43,7 +43,15 @@ Para probar las funciones que necesitan administrador en modo desarrollo, abre l
 ## Estructura
 
 ```
-src/                  Interfaz (TypeScript + CSS)
+src/
+  main.ts             Arranque: barra lateral, aviso de permisos y módulo activo
+  app.ts              Estado global (isAdmin)
+  ui.ts               Utilidades compartidas (formato, diálogos, estados)
+  modules/
+    module.ts         Contrato de módulo e icon()
+    index.ts          Lista ordenada de módulos de la barra lateral
+    custom-clean.ts   Custom Clean
+    bloatware-remover.ts  Bloatware Remover
 src-tauri/src/
   lib.rs              Comandos expuestos a la interfaz
   cleaner.rs          Categorías de limpieza, análisis y borrado
@@ -51,6 +59,10 @@ src-tauri/src/
   ps.rs               Ejecución de PowerShell sin ventana
   system.rs           Detección y elevación de administrador
 ```
+
+Para añadir un módulo, crea `src/modules/<id>.ts` exportando un `Module` (id, nombre en inglés,
+descripción en español, icono y `render(root)`, que busca sus elementos dentro de `root`) y
+añádelo en su posición dentro de `src/modules/index.ts`.
 
 Para añadir una categoría de limpieza, añade una entrada en `categories()` de `cleaner.rs`.
 Para añadir una app al catálogo, añade una línea a `CATALOG` en `debloat.rs`.

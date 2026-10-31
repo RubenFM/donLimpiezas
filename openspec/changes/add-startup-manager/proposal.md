@@ -6,7 +6,7 @@ Los programas que se inician con Windows son una de las principales causas de ar
 
 ## What Changes
 
-- Nueva pestaña **"Inicio"** que lista los programas que se ejecutan al iniciar sesión, con nombre, comando, editor (cuando se pueda obtener), origen y estado (activado/desactivado).
+- Nuevo módulo **Startup Manager** en la barra lateral (requiere `add-sidebar-navigation`) que lista los programas que se ejecutan al iniciar sesión, con nombre, comando, editor (cuando se pueda obtener), origen y estado (activado/desactivado).
 - Orígenes cubiertos: claves `Run` del registro (usuario y equipo, 64 y 32 bits) y carpetas de Inicio (usuario y comunes).
 - Activar y desactivar entradas usando el mismo mecanismo que el Administrador de tareas (`StartupApproved`), de modo que los cambios son reversibles y coherentes con lo que muestra Windows.
 - Las entradas de equipo (HKLM y carpeta de Inicio común) requieren administrador y se muestran deshabilitadas sin él.
@@ -24,5 +24,5 @@ Los programas que se inician con Windows son una de las principales causas de ar
 
 - **Backend**: nuevo módulo `src-tauri/src/startup.rs` y comandos `list_startup` y `set_startup_enabled` en `lib.rs`.
 - **Dependencias**: crates `winreg` (acceso al registro) y `chrono` (fecha del log). Ver `design.md`.
-- **Frontend**: nueva pestaña en `index.html` y su lógica en `src/main.ts`.
+- **Frontend**: nuevo módulo `src/modules/startup-manager.ts` registrado en `src/modules/index.ts`.
 - **Sistema**: escribe valores en `HKCU`/`HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\*`. No modifica ni borra las entradas originales.

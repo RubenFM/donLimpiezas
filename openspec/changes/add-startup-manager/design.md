@@ -14,7 +14,7 @@ Windows (8 y posteriores) guarda el estado activado/desactivado de los programas
 
 **Non-Goals:**
 - Resolver argumentos complejos de la línea de comandos ni verificar firmas digitales.
-- Vigilar cambios en tiempo real: la lista se refresca al abrir la pestaña o al pulsar "Actualizar".
+- Vigilar cambios en tiempo real: la lista se refresca al abrir el módulo por primera vez o al pulsar "Actualizar".
 
 ## Decisions
 
@@ -56,7 +56,7 @@ La ruta del ejecutable de una entrada `Run` se extrae del comando: el primer tok
 
 ### Interfaz
 
-Nueva pestaña "Inicio" con una fila por entrada e interruptor. El cambio se aplica al pulsar el interruptor, **sin diálogo de confirmación**: no es destructivo y se deshace con otro clic. Si el backend devuelve error, el interruptor vuelve a su estado anterior y se muestra el mensaje.
+Nuevo módulo "Startup Manager" con una fila por entrada e interruptor. El cambio se aplica al pulsar el interruptor, **sin diálogo de confirmación**: no es destructivo y se deshace con otro clic. Si el backend devuelve error, el interruptor vuelve a su estado anterior y se muestra el mensaje.
 
 ## Risks / Trade-offs
 

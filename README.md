@@ -4,6 +4,11 @@ Limpiador de sistema y eliminador de bloatware para Windows 10/11, hecho con Tau
 
 ## Funciones
 
+**Health Check**
+- Resumen de solo lectura: Windows, tiempo encendido, memoria y espacio de cada disco
+- Espacio liberable, bloatware, programas de inicio, actualizaciones y ajustes de privacidad
+  pendientes, con un botón "Revisar" que abre el módulo correspondiente
+
 **Custom Clean**
 - Temporales del usuario y de Windows (solo archivos con más de 24 h)
 - Papelera de reciclaje
@@ -54,6 +59,12 @@ Nunca se tocan Microsoft Store, los runtimes (VCLibs, .NET, UI.Xaml), el shell n
 - Las entradas del equipo requieren administrador
 - Guarda un registro en `%LOCALAPPDATA%\DonLimpiezas\startup.log`
 
+**Software Updater**
+- Lista los programas con versión nueva según winget (también los de versión desconocida)
+- Los actualiza de uno en uno con sus instaladores oficiales y lo registra en
+  `%LOCALAPPDATA%\DonLimpiezas\updates.log`
+- Al abrir la app comprueba las actualizaciones y muestra cuántas hay en la barra lateral
+
 ## Requisitos (en Windows)
 
 1. [Node.js](https://nodejs.org) (ya lo tienes)
@@ -83,15 +94,19 @@ src/
   main.ts             Arranque: barra lateral, aviso de permisos y módulo activo
   app.ts              Estado global (isAdmin)
   ui.ts               Utilidades compartidas (formato, diálogos, estados)
+  nav.ts              Abrir módulos y contadores de la barra lateral desde un módulo
+  updates.ts          Lista de actualizaciones compartida entre módulos
   modules/
     module.ts         Contrato de módulo e icon()
     index.ts          Lista ordenada de módulos de la barra lateral
+    health-check.ts   Health Check
     custom-clean.ts   Custom Clean
     uninstaller.ts    Uninstaller
     bloatware-remover.ts  Bloatware Remover
     duplicate-finder.ts   Duplicate Finder
     performance-optimizer.ts  Performance Optimizer
     startup-manager.ts    Startup Manager
+    software-updater.ts   Software Updater
 src-tauri/src/
   lib.rs              Comandos expuestos a la interfaz
   cleaner.rs          Categorías de limpieza, análisis y borrado
@@ -101,13 +116,15 @@ src-tauri/src/
   startup.rs          Programas de inicio y su estado en StartupApproved
   uninstaller.rs      Programas instalados y desinstalación con su desinstalador
   cmdline.rs          Interpretación de líneas de comandos registradas
+  updater.rs          Lectura de winget y actualización de programas
+  sysinfo.rs          Windows, memoria, discos y tiempo encendido
   log.rs              Registro de cambios en %LOCALAPPDATA%\DonLimpiezas
   ps.rs               Ejecución de PowerShell sin ventana
   system.rs           Administrador, elevación y procesos en ejecución
 ```
 
 Para añadir un módulo, crea `src/modules/<id>.ts` exportando un `Module` (id, nombre en inglés,
-descripción en español, icono y `render(root)`, que busca sus elementos dentro de `root`) y
+descripción en español, icono, `render(root)`, que busca sus elementos dentro de `root`, e `init()` opcional al arrancar) y
 añádelo en su posición dentro de `src/modules/index.ts`.
 
 Para añadir una categoría de limpieza, añade una entrada en `categories()` de `cleaner.rs`.

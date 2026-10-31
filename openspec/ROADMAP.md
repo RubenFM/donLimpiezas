@@ -9,8 +9,8 @@
 | 4 | Uninstaller | `add-uninstaller` | Implementado, pendiente de probar en la app y archivar |
 | 5 | Performance Optimizer | `add-performance-optimizer` | Implementado, pendiente de probar en la app y archivar |
 | 6 | Duplicate Finder | `add-duplicate-finder` | Implementado, pendiente de probar en la app y archivar |
-| 7 | Actualizar software | `add-software-updater` | Borrador |
-| 8 | Revisión | `add-health-check` | Borrador (agrega los anteriores) |
+| 7 | Software Updater | `add-software-updater` | Implementado, pendiente de probar en la app y archivar |
+| 8 | Health Check | `add-health-check` | Implementado, pendiente de probar en la app y archivar |
 | 9 | Nubes | `add-cloud-drive-cleaner` | Borrador |
 | 10 | Controladores | `add-driver-updater` | Borrador |
 

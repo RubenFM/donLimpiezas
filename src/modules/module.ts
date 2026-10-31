@@ -9,6 +9,8 @@ export interface Module {
   icon: string;
   /** Se llama una sola vez, la primera vez que se abre el módulo. */
   render(root: HTMLElement): void;
+  /** Se llama al arrancar la app, aunque el módulo no se abra (p. ej. para su contador). */
+  init?(): void;
 }
 
 /** Envuelve los trazos de un icono en el SVG común. */

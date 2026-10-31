@@ -5,9 +5,11 @@ mod duplicates;
 mod log;
 mod ps;
 mod startup;
+mod sysinfo;
 mod system;
 mod tweaks;
 mod uninstaller;
+mod updater;
 
 use tauri::{Emitter, Manager};
 
@@ -25,6 +27,11 @@ where
 #[tauri::command]
 fn is_admin() -> bool {
     system::is_admin()
+}
+
+#[tauri::command]
+async fn system_info() -> Result<sysinfo::SystemInfo, String> {
+    blocking(|| Ok(sysinfo::info())).await
 }
 
 #[tauri::command]
@@ -126,6 +133,17 @@ async fn revert_tweaks(ids: Vec<String>) -> Result<Vec<tweaks::TweakResult>, Str
 }
 
 #[tauri::command]
+async fn list_updates(app: tauri::AppHandle) -> Result<Vec<updater::Update>, String> {
+    blocking(move || updater::list(&app.state::<updater::State>())).await
+}
+
+/// Espera a que termine el instalador del programa.
+#[tauri::command]
+async fn update_program(app: tauri::AppHandle, id: String) -> Result<updater::UpdateResult, String> {
+    blocking(move || updater::update(&id, &app.state::<updater::State>())).await
+}
+
+#[tauri::command]
 async fn list_startup() -> Result<Vec<startup::StartupEntry>, String> {
     blocking(|| Ok(startup::list())).await
 }
@@ -144,9 +162,11 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(duplicates::State::default())
+        .manage(updater::State::default())
         .invoke_handler(tauri::generate_handler![
             is_admin,
             relaunch_as_admin,
+            system_info,
             scan_cleanup,
             run_cleanup,
             list_programs,
@@ -163,6 +183,8 @@ pub fn run() {
             revert_tweaks,
             list_startup,
             set_startup_enabled,
+            list_updates,
+            update_program,
         ])
         .run(tauri::generate_context!())
         .expect("error al iniciar la aplicación");

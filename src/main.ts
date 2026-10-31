@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { app, initApp } from "./app";
 import { modules } from "./modules";
 import type { Module } from "./modules/module";
+import { registerNav } from "./nav";
 import { escapeHtml } from "./ui";
 
 const STORAGE_KEY = "activeModule";
@@ -88,6 +89,23 @@ function buildNav() {
   });
 }
 
+function setBadge(moduleId: string, count: number) {
+  const button = buttons.get(moduleId);
+  if (!button) return;
+  let badge = button.querySelector<HTMLElement>(".nav-badge");
+  if (count <= 0) {
+    badge?.remove();
+    return;
+  }
+  if (!badge) {
+    badge = document.createElement("span");
+    badge.className = "nav-badge";
+    button.append(badge);
+  }
+  badge.textContent = count > 99 ? "99+" : String(count);
+  badge.title = `${count} pendientes`;
+}
+
 function setupAdminBanner() {
   document.querySelector<HTMLElement>("#admin-banner")!.hidden = app.isAdmin;
   document.querySelector<HTMLButtonElement>("#btn-elevate")!.addEventListener("click", async () => {
@@ -103,8 +121,16 @@ async function init() {
   await initApp();
   setupAdminBanner();
   buildNav();
+  registerNav({
+    navigate: (id) => {
+      const module = modules.find((m) => m.id === id);
+      if (module) activate(module);
+    },
+    setBadge,
+  });
   const saved = modules.find((m) => m.id === savedModuleId());
   activate(saved ?? modules[0]);
+  for (const module of modules) module.init?.();
 }
 
 init();

@@ -609,3 +609,134 @@ dialog p {
   gap: 8px;
   margin-top: 16px;
 }
+
+/* Contador de avisos en la barra lateral. */
+.nav-item {
+  position: relative;
+}
+
+.nav-badge {
+  margin-left: auto;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 860px) {
+  .nav-badge {
+    position: absolute;
+    top: 3px;
+    right: 6px;
+    min-width: 0;
+    padding: 0 4px;
+    font-size: 9px;
+  }
+}
+
+/* Health Check */
+.health {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.stat-wide {
+  grid-column: span 2;
+}
+
+.stat-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.meter {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--pill);
+  overflow: hidden;
+}
+
+.meter div {
+  height: 100%;
+  background: var(--accent);
+}
+
+.meter.high div {
+  background: var(--warn);
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+}
+
+.card + .card {
+  border-top: 1px solid var(--border);
+}
+
+.card-mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--pill);
+  font-weight: 700;
+}
+
+.card.ok .card-mark {
+  background: var(--ok-bg);
+  color: var(--accent);
+}
+
+.card.warn .card-mark {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+.card-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-value {
+  font-size: 16px;
+}

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1f9d6b"/>
+      <stop offset="1" stop-color="#5ad1a3"/>
+    </linearGradient>
+  </defs>
+  <rect x="32" y="32" width="960" height="960" rx="220" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Palo -->
+    <path d="M770 140 L548 548" stroke-width="58"/>
+    <!-- Abrazadera -->
+    <path d="M462 548 L612 610" stroke-width="104"/>
+    <!-- Mocho: flecos gruesos y ondulados -->
+    <g stroke-width="62">
+      <path d="M440 600 C380 680, 450 750, 372 860"/>
+      <path d="M492 618 C440 705, 515 775, 460 892"/>
+      <path d="M545 636 C515 725, 590 795, 555 905"/>
+      <path d="M596 652 C590 740, 655 800, 650 890"/>
+    </g>
+  </g>
+  <!-- Gotas -->
+  <path d="M265 800 C265 800, 225 852, 225 875 a40 40 0 0 0 80 0 C305 852, 265 800, 265 800 Z" fill="#fff" opacity="0.9"/>
+  <path d="M760 815 C760 815, 732 852, 732 868 a28 28 0 0 0 56 0 C788 852, 760 815, 760 815 Z" fill="#fff" opacity="0.8"/>
+  <!-- Destellos de limpio -->
+  <path d="M290 215 L318 292 L395 320 L318 348 L290 425 L262 348 L185 320 L262 292 Z" fill="#fff"/>
+  <path d="M440 135 L453 171 L489 184 L453 197 L440 233 L427 197 L391 184 L427 171 Z" fill="#fff" opacity="0.85"/>
+</svg>

@@ -99,6 +99,13 @@ cd src-tauri; cargo test -- --ignored --nocapture  # tests que leen el sistema r
 Para probar las funciones que necesitan administrador en modo desarrollo, abre la terminal
 **como administrador**. El botón "Reiniciar como administrador" está pensado para la app ya instalada.
 
+## Icono
+
+El icono (una fregona) está en `src-tauri/icons/app-icon.svg`. Para regenerar los tamaños después de
+editarlo, exporta el SVG a `app-icon.png` (1024×1024, fondo transparente) y ejecuta
+`npx tauri icon src-tauri\icons\app-icon.png`; borra después las carpetas `android` e `ios` y los
+`Square*`, que no se usan en Windows. La barra lateral usa una copia en `src/assets/logo.svg`.
+
 ## Estructura
 
 ```

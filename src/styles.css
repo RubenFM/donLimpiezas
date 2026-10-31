@@ -88,11 +88,9 @@ body.busy {
 }
 
 .logo {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
-  border-radius: 7px;
-  background: linear-gradient(135deg, var(--accent), #5ad1a3);
 }
 
 .nav {

@@ -1,28 +1,26 @@
 # Proposal
 
-> **Estado: borrador.** Pendiente de revisar antes de generar specs, design y tasks.
-
 ## Why
 
-OneDrive, Google Drive y Dropbox acumulan archivos grandes y antiguos que ocupan espacio en la nube y, si están sincronizados localmente, también en disco.
+OneDrive y Dropbox descargan copias locales de los archivos que se abren y no las liberan solos. Archivos grandes o antiguos que ya están a salvo en la nube acaban ocupando espacio en el disco sin que el usuario lo sepa.
 
 ## What Changes
 
-- **Fase 1 (local, sin credenciales):** detectar las carpetas sincronizadas de OneDrive, Google Drive y Dropbox; listar archivos grandes, antiguos y duplicados; liberar espacio local marcándolos como "solo en la nube" (OneDrive: atributo de Archivos a petición) sin borrarlos.
-- **Fase 2 (opcional, posterior):** conexión mediante las APIs oficiales (OAuth) para analizar la cuenta completa.
+- Nuevo módulo **Cloud Drive Cleaner** en la barra lateral, tras Duplicate Finder.
+- Detecta las carpetas sincronizadas de OneDrive (todas las cuentas) y Dropbox.
+- Lista los archivos descargados en local por encima de un tamaño mínimo y, opcionalmente, sin modificar desde hace un tiempo, con el espacio local total y el que se puede liberar.
+- **Liberar espacio**: marca los archivos seleccionados como "solo en la nube", igual que la opción del Explorador. No borra nada: siguen en la nube y se descargan al abrirlos.
+- Registro en `%LOCALAPPDATA%\DonLimpiezas\cloud.log`.
+- Fuera de alcance: Google Drive (unidad virtual en streaming), conexión a las APIs de los servicios (OAuth) y duplicados en la nube (Duplicate Finder ya analiza OneDrive).
 
 ## Capabilities
 
 ### New Capabilities
-- `cloud-storage-cleanup`: análisis de carpetas de nube sincronizadas y liberación de espacio local.
+- `cloud-storage-cleanup`: liberación del espacio local que ocupan archivos ya guardados en la nube.
 
 ### Modified Capabilities
 
 ## Impact
 
-- Nuevo `src-tauri/src/cloud.rs`. La fase 2 implicaría registrar apps OAuth en Microsoft, Google y Dropbox y guardar tokens de forma segura.
-- Reutiliza la detección de duplicados de `add-duplicate-finder`.
-
-## Open Questions
-
-- ¿Basta con la fase 1 o la fase 2 es imprescindible?
+- Nuevo `src-tauri/src/cloud.rs` y comandos `cloud_roots`, `scan_cloud` y `free_cloud_files`.
+- Nuevo `src/modules/cloud-drive-cleaner.ts`.

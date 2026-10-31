@@ -4,7 +4,7 @@ Limpiador de sistema y eliminador de bloatware para Windows 10/11, hecho con Tau
 
 ## Funciones
 
-**Limpieza**
+**Custom Clean**
 - Temporales del usuario y de Windows (solo archivos con más de 24 h)
 - Papelera de reciclaje
 - Caché de miniaturas y de sombreadores DirectX
@@ -12,13 +12,21 @@ Limpiador de sistema y eliminador de bloatware para Windows 10/11, hecho con Tau
 - Descargas de Windows Update
 - Caché de Chrome, Edge, Brave y Firefox (no toca historial, contraseñas ni sesiones)
 
-**Apps preinstaladas**
+**Bloatware Remover**
 - Detecta el bloatware de un catálogo revisado (Noticias, El Tiempo, Candy Crush, Clipchamp, Xbox…)
 - Lo quita para tu usuario o para todos los usuarios y la imagen de Windows (requiere administrador)
 - Crea un punto de restauración antes de quitar nada
 - Guarda un registro en `%LOCALAPPDATA%\DonLimpiezas\debloat.log`
 
 Nunca se tocan Microsoft Store, los runtimes (VCLibs, .NET, UI.Xaml), el shell ni Seguridad de Windows.
+
+**Startup Manager**
+- Lista los programas que se abren al iniciar sesión: claves `Run` del registro (usuario, equipo y
+  equipo 32 bits) y carpetas de Inicio (usuario y común), con editor y destino de los accesos directos
+- Los activa y desactiva igual que el Administrador de tareas (`StartupApproved`): no borra nada y
+  ambos muestran siempre lo mismo
+- Las entradas del equipo requieren administrador
+- Guarda un registro en `%LOCALAPPDATA%\DonLimpiezas\startup.log`
 
 ## Requisitos (en Windows)
 
@@ -35,6 +43,8 @@ Desde PowerShell, en esta carpeta:
 npm install
 npm run tauri dev     # modo desarrollo
 npm run tauri build   # instalador en src-tauri\target\release\bundle\
+cd src-tauri; cargo test                       # tests unitarios
+cd src-tauri; cargo test -- --ignored --nocapture  # tests que leen el sistema real
 ```
 
 Para probar las funciones que necesitan administrador en modo desarrollo, abre la terminal
@@ -52,10 +62,13 @@ src/
     index.ts          Lista ordenada de módulos de la barra lateral
     custom-clean.ts   Custom Clean
     bloatware-remover.ts  Bloatware Remover
+    startup-manager.ts    Startup Manager
 src-tauri/src/
   lib.rs              Comandos expuestos a la interfaz
   cleaner.rs          Categorías de limpieza, análisis y borrado
   debloat.rs          Catálogo de bloatware y desinstalación vía PowerShell
+  startup.rs          Programas de inicio y su estado en StartupApproved
+  log.rs              Registro de cambios en %LOCALAPPDATA%\DonLimpiezas
   ps.rs               Ejecución de PowerShell sin ventana
   system.rs           Detección y elevación de administrador
 ```

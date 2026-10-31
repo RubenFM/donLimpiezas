@@ -1,6 +1,8 @@
 mod cleaner;
 mod debloat;
+mod log;
 mod ps;
+mod startup;
 mod system;
 
 /// Ejecuta trabajo pesado (disco, PowerShell) fuera del hilo de la interfaz.
@@ -57,6 +59,20 @@ async fn remove_bloat(
     blocking(move || debloat::remove(&ids, all_users)).await
 }
 
+#[tauri::command]
+async fn list_startup() -> Result<Vec<startup::StartupEntry>, String> {
+    blocking(|| Ok(startup::list())).await
+}
+
+#[tauri::command]
+async fn set_startup_enabled(
+    source: startup::Source,
+    name: String,
+    enabled: bool,
+) -> Result<(), String> {
+    blocking(move || startup::set_enabled(source, &name, enabled, system::is_admin())).await
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -68,6 +84,8 @@ pub fn run() {
             list_bloat,
             create_restore_point,
             remove_bloat,
+            list_startup,
+            set_startup_enabled,
         ])
         .run(tauri::generate_context!())
         .expect("error al iniciar la aplicación");

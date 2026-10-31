@@ -1,30 +1,26 @@
 # Proposal
 
-> **Estado: borrador.** Pendiente de revisar antes de generar specs, design y tasks.
-
 ## Why
 
-La limpieza actual cubre lo básico. Para estar a la altura de un limpiador completo faltan categorías habituales y opciones de privacidad.
+Custom Clean cubre lo básico de Windows y los navegadores. Faltan cachés habituales de Windows y de aplicaciones de uso diario, y opciones de privacidad que cualquier limpiador ofrece. Además, limpiar la caché de un programa abierto deja archivos sin borrar sin que el usuario sepa por qué.
 
 ## What Changes
 
-- Nuevas categorías candidatas: Prefetch, logs de Windows (`*.log` de `%SystemRoot%\Logs`), caché de Delivery Optimization, caché de iconos, papelera por unidad, cachés de apps (Discord, Spotify, Teams, VS Code, Steam shader cache).
-- Opciones de privacidad **desmarcadas por defecto** y con aviso: historial, cookies y sesiones de navegadores (cierran sesión en webs); documentos recientes; historial de Ejecutar.
-- Avisar si un navegador está abierto antes de limpiar su caché.
-- Lista de exclusiones definida por el usuario.
+- Nuevas categorías de **Windows**: caché de iconos, Prefetch (admin) y logs de mantenimiento de Windows (CBS y DISM, admin).
+- Nuevo grupo **Aplicaciones**: cachés de Discord, Spotify, Visual Studio Code y del navegador integrado de Steam.
+- Nuevo grupo **Privacidad**, **desmarcado por defecto** y con aviso: historial y cookies de Chrome, Edge y Brave; cookies de Firefox; documentos recientes y listas de accesos rápidos.
+- Aviso **"Abierto"** en las categorías cuyo programa se está ejecutando, indicando que conviene cerrarlo para limpiarlo por completo.
+- Fuera de alcance: exclusiones definidas por el usuario, historial de Firefox (comparte base de datos con los marcadores) e historial de Ejecutar (registro). Pueden ser cambios posteriores.
 
 ## Capabilities
 
 ### New Capabilities
 
 ### Modified Capabilities
-- `system-cleanup`: nuevas categorías, categorías de privacidad, detección de navegador abierto y exclusiones.
+- `system-cleanup`: nuevas categorías y grupos, categorías desmarcadas por defecto y aviso de programa abierto.
 
 ## Impact
 
-- `src-tauri/src/cleaner.rs` (probablemente dividido en `cleaner/` por grupos), `src/main.ts`.
-- Leer historial/cookies requiere tocar bases SQLite de los navegadores: valorar crate `rusqlite` o limitarse a borrar archivos completos.
-
-## Open Questions
-
-- ¿Qué apps de terceros priorizar en cachés de aplicaciones?
+- `src-tauri/src/cleaner.rs`: nuevos campos de categoría (`default_selected`, `warning`, `processes`), destino `Files` para archivos concretos y detección de procesos.
+- `windows-sys`: feature `Win32_System_Diagnostics_ToolHelp`.
+- `src/modules/custom-clean.ts`: selección por defecto, aviso y etiqueta "Abierto".
